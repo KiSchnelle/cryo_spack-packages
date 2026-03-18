@@ -139,16 +139,6 @@ class Relion(CMakePackage, CudaPackage):
     )
     patch("cudarch-override.patch", when="@5: +cuda")
 
-    def patch(self):
-        # For CUDA >= 11.6, disable bundled CUB to avoid namespace conflicts
-        if self.spec.satisfies("@:3 +cuda ^cuda@11.6:"):
-            filter_file(
-                r'#include "cub/cub.cuh"',
-                "#include <cub/cub.cuh>",
-                "src/acc/cuda/cuda_mem_utils.h",
-                string=True,
-            )
-
     def cmake_args(self):
         args = [
             "-DGUI=%s" % ("+gui" in self.spec),
@@ -187,7 +177,11 @@ class Relion(CMakePackage, CudaPackage):
             args.append(f"-DPYTHON_EXE_PATH={self.spec['python'].command.path}")
             args.append("-DFETCH_WEIGHTS=OFF")
 
-        if self.spec.satisfies("@:3 +cuda"):
+        if self.spec.satisfies("@:3 +cuda ^cuda@11.6:"):
+            args.append(
+                "-DCUDA_NVCC_FLAGS=--allow-unsupported-compiler;-DCUB_NS_QUALIFIER=::cub"
+            )
+        elif self.spec.satisfies("@:3 +cuda"):
             args.append("-DCUDA_NVCC_FLAGS=--allow-unsupported-compiler")
 
         return args
