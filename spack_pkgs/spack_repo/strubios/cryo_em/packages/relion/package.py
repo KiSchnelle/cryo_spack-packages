@@ -106,6 +106,7 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("libtiff")
     depends_on("libpng", when="@4:")
 
+    depends_on("cuda@9:", when="@4: +cuda")
     depends_on("cuda@9:11.4", when="@3:3 +cuda")
     conflicts("cuda@13:", when="@:5.0.0 +cuda")
     depends_on("tbb", when="+altcpu")
@@ -175,6 +176,9 @@ class Relion(CMakePackage, CudaPackage):
         if self.spec.satisfies("@5:"):
             args.append(f"-DPYTHON_EXE_PATH={self.spec['python'].command.path}")
             args.append("-DFETCH_WEIGHTS=OFF")
+
+        if self.spec.satisfies("@:3 +cuda"):
+            args.append("-DCUDA_NVCC_FLAGS=--allow-unsupported-compiler")
 
         return args
 
