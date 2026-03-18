@@ -1,0 +1,4 @@
+repo_index:
+  paths:
+    - spack_pkgs/spack_repo/strubios/cryo_em
+    - spack_pkgs/spack_repo/strubios/operation
