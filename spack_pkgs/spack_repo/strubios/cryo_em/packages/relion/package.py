@@ -74,22 +74,6 @@ class Relion(CMakePackage, CudaPackage):
     variant("double", default=True, description="double precision (cpu) code")
     variant("double-gpu", default=False, description="double precision gpu")
 
-    # if built with purpose=cluster then relion will link to gpfs libraries
-    # if that's not desirable then use purpose=desktop
-    variant(
-        "purpose",
-        default="cluster",
-        values=("cluster", "desktop"),
-        description="build relion for use in cluster or desktop",
-    )
-
-    variant(
-        "build_type",
-        default="RelWithDebInfo",
-        description="The build type to build",
-        values=("Debug", "Release", "RelWithDebInfo", "Profiling", "Benchmarking"),
-    )
-
     # these new values were added in relion 3
     # do not seem to cause problems with < 3
     variant("mklfft", default=False, description="Use MKL rather than FFTW for FFT")
