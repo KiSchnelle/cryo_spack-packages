@@ -21,6 +21,10 @@ class Relion(CMakePackage, CudaPackage):
     license("GPL-2.0-only")
 
     version(
+        "5.1.0",
+        sha256="714649163fbd7ee63cf9331d97751bd2e972703482349d8d7f2110387ef556d2",
+    )
+    version(
         "5.0.1",
         sha256="3253230cd4b3d9633a5cac906937039b9971eb9430c3e2d838473777fb811f4c",
     )
