@@ -145,7 +145,6 @@ class Relion(CMakePackage, CudaPackage):
         sha256="4995b0d4bc24a1ec99042a4b73e9db84918eb6f622dacb308b718146bfb6a5ea",
         when="@4.0.0",
     )
-    patch("cudarch-override.patch", when="@5: +cuda")
 
     def cmake_args(self):
         args = [
