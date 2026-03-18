@@ -15,8 +15,8 @@ class Relion(CMakePackage, CudaPackage):
 
     homepage = "https://www2.mrc-lmb.cam.ac.uk/relion"
     git = "https://github.com/3dem/relion.git"
-    url = "https://github.com/3dem/relion/archive/5.0.1.zip"
-    maintainers("kischnelle")
+    url = "https://github.com/3dem/relion/archive/4.0.0.zip"
+    maintainers("dacolombo", "Markus92")
 
     license("GPL-2.0-only")
 
@@ -25,66 +25,149 @@ class Relion(CMakePackage, CudaPackage):
         sha256="3253230cd4b3d9633a5cac906937039b9971eb9430c3e2d838473777fb811f4c",
     )
     version(
-        "3.1.4",
-        sha256="c7b668879fa06bcb854f2f131970d9747320f75b45e335f937bc0d7088bd1c13",
+        "4.0.1",
+        sha256="7e0d56fd4068c99f943dc309ae533131d33870392b53a7c7aae7f65774f667be",
     )
+    version(
+        "4.0.0",
+        sha256="0987e684e9d2dfd630f1ad26a6847493fe9fcd829ec251d8bc471d11701d51dd",
+    )
+
+    # 3.1.4 latest release in 3.1 branch
+    version(
+        "3.1.4",
+        sha256="3bf3449bd2d71dc85d2cdbd342e772f5faf793d8fb3cda6414547cf34c98f34c",
+    )
+    version(
+        "3.1.3",
+        sha256="e67277200b54d1814045cfe02c678a58d88eb8f988091573453c8568bfde90fc",
+    )
+    version(
+        "3.1.2",
+        sha256="dcdf6f214f79a03d29f0fed2de58054efa35a9d8401543bdc52bfb177987931f",
+    )
+    version(
+        "3.1.1",
+        sha256="63e9b77e1ba9ec239375020ad6ff631424d1a5803cba5c608c09fd44d20b1618",
+    )
+    version(
+        "3.1.0",
+        sha256="8a7e751fa6ebcdf9f36046499b3d88e170c4da86d5ff9ad1914b5f3d178867a8",
+    )
+
+    # 3.0.8 latest release in 3.0 branch
     version(
         "3.0.8",
         sha256="18cdd58e3a612d32413eb37e473fe8fbf06262d2ed72e42da20356f459260973",
     )
+    version(
+        "3.0.7",
+        sha256="a6d37248fc4d0bfc18f4badb7986dc1b6d6849baa2128b0b4dade13cb6991a99",
+    )
+
+    # relion master contains development code
+    # contains 3.0 branch code
+    version("master")
 
     variant("gui", default=True, description="build the gui")
+    variant("cuda", default=True, description="enable compute on gpu")
     variant("double", default=True, description="double precision (cpu) code")
     variant("double-gpu", default=False, description="double precision gpu")
-    variant("cuda", default=True, description="enable compute on gpu")
-    variant("force-fftw", default=True, description="download fftw during install")
+
+    # if built with purpose=cluster then relion will link to gpfs libraries
+    # if that's not desirable then use purpose=desktop
     variant(
-        "mklfft",
-        default=False,
-        when="~force-fftw",
-        description="Use MKL rather than FFTW for FFT",
+        "purpose",
+        default="cluster",
+        values=("cluster", "desktop"),
+        description="build relion for use in cluster or desktop",
     )
-    variant("amdfftw", default=True, description="AMD optimized FFTW version")
+
+    variant(
+        "build_type",
+        default="RelWithDebInfo",
+        description="The build type to build",
+        values=("Debug", "Release", "RelWithDebInfo", "Profiling", "Benchmarking"),
+    )
+
+    # these new values were added in relion 3
+    # do not seem to cause problems with < 3
+    variant("mklfft", default=False, description="Use MKL rather than FFTW for FFT")
+    variant(
+        "allow_ctf_in_sagd",
+        default=True,
+        description=(
+            "Allow CTF-modulation in SAGD, as specified in Claim 1 of patent US10,282,513B2"
+        ),
+        when="@3",
+    )
     variant("altcpu", default=False, description="Use CPU acceleration", when="~cuda")
 
-    depends_on("gcc", type="build")
+    variant(
+        "external_motioncor2",
+        default=False,
+        description="Have external motioncor2 available in addition to Relion builtin",
+    )
+
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
     depends_on("mpi")
-    depends_on("cuda", when="+cuda")
+    depends_on("cmake@3:", type="build")
+    depends_on("binutils@2.32:", type="build")
+    depends_on("fftw precision=float,double", when="~mklfft")
 
-    depends_on("ctffind")
-    depends_on("ghostscript")
+    # use the +xft variant so the interface is not so horrible looking
     depends_on("fltk+xft", when="+gui")
-    depends_on("libxft", when="+gui")
-    depends_on("libx11", when="+gui")
-    depends_on("fftw", when="~force-fftw~mklfft~amdfftw")
-    depends_on("amdfftw", when="~force-fftw+amdfftw")
-    depends_on("libtiff")
-    depends_on("libpng")
-    depends_on("xz")
 
+    depends_on("libtiff")
+    depends_on("libpng", when="@4:")
+
+    depends_on("cuda@9:", when="@3: +cuda")
+    conflicts("cuda@13:", when="@:5.0.0 +cuda")
     depends_on("tbb", when="+altcpu")
     depends_on("mkl", when="+mklfft")
+    depends_on("ctffind@4.1:4", type="run", when="@5")
+    depends_on("ctffind@:4", type="run")
+    depends_on("motioncor2", type="run", when="+external_motioncor2")
+
+    depends_on("ghostscript", type="run", when="@4:")
+    depends_on("pbzip2", type="run", when="@5:")
+    depends_on("xz", type="run", when="@5:")
+    depends_on("zstd", type="run", when="@5:")
+
+    for arch in CudaPackage.cuda_arch_values:
+        depends_on(
+            f"py-relion@5.0.1 +cuda cuda_arch={arch}",
+            type=("build", "run"),
+            when=f"@5.0.1 +cuda cuda_arch={arch}",
+        )
+    depends_on("py-relion@5.0.1 ~cuda", type=("build", "run"), when="@5.0.1 ~cuda")
+
+    patch(
+        "0002-Simple-patch-to-fix-intel-mkl-linking.patch",
+        when="@:3.1.1 os=ubuntu18.04",
+    )
+    patch(
+        "https://github.com/3dem/relion/commit/2daa7447c1c871be062cce99109b6041955ec5e9.patch?full_index=1",
+        sha256="4995b0d4bc24a1ec99042a4b73e9db84918eb6f622dacb308b718146bfb6a5ea",
+        when="@4.0.0",
+    )
+    patch("cudarch-override.patch", when="@5: +cuda")
 
     def cmake_args(self):
         args = [
-            "-DCMAKE_C_FLAGS=-g",
-            "-DCMAKE_CXX_FLAGS=-g",
-            "-DGUI=%s" % ("ON" if "+gui" in self.spec else "OFF"),
-            "-DDoublePrec_CPU=%s" % ("ON" if "+double" in self.spec else "OFF"),
-            "-DDoublePrec_GPU=%s" % ("ON" if "+double-gpu" in self.spec else "OFF"),
-            "-DFORCE_OWN_FFTW=%s" % ("ON" if "+force-fftw" in self.spec else "OFF"),
-            "-DMKLFFT=%s" % ("ON" if "+mklfft" in self.spec else "OFF"),
-            "-DAMDFFTW=%s" % ("ON" if "+amdfftw" in self.spec else "OFF"),
-            "-DALTCPU=%s" % ("ON" if "+altcpu" in self.spec else "OFF"),
+            "-DGUI=%s" % ("+gui" in self.spec),
+            "-DDoublePrec_CPU=%s" % ("+double" in self.spec),
+            "-DDoublePrec_GPU=%s" % ("+double-gpu" in self.spec),
+            "-DALLOW_CTF_IN_SAGD=%s" % ("+allow_ctf_in_sagd" in self.spec),
+            "-DMKLFFT=%s" % ("+mklfft" in self.spec),
+            "-DALTCPU=%s" % ("+altcpu" in self.spec),
         ]
-
-        if self.spec.satisfies("@5.0.1:"):
-            args.extend(
-                [
-                    "-DPYTHON_EXE_PATH=/appl/spack/opt/spack/linux-rocky9-x86_64_v3/gcc-11.5.0/miniforge3-24.3.0-0-youy4hac6epwzeya7zqdpsfag7dhbczh/envs/relion-5.0/bin/python",
-                    "-DTORCH_HOME_PATH=/appl/torch/relion_torch",
-                ]
-            )
+        if self.spec.satisfies("+gui"):
+            incs = [
+                f"-I{self.spec[lib].prefix.include}" for lib in ["libx11", "xproto"]
+            ]
+            args += ["-DCMAKE_CXX_FLAGS=" + " ".join(incs)]
 
         if "+cuda" in self.spec:
             carch = self.spec.variants["cuda_arch"].value[0]
@@ -93,17 +176,57 @@ class Relion(CMakePackage, CudaPackage):
             if carch == "none":
                 raise ValueError("Must select a value for cuda_arch")
             else:
-                args += ["-DCUDA=ON", "-DCUDA_ARCH=%s" % (carch)]
+                args += ["-DCUDA=ON", "-DCudaTexture=ON", "-DCUDA_ARCH=%s" % (carch)]
+
+            if self.spec.satisfies("@5:"):
+                cuda_flags = " ".join(
+                    CudaPackage.cuda_flags(self.spec.variants["cuda_arch"].value)
+                )
+                args += [f"-DCUDARCH={cuda_flags}"]
+
+        if self.spec.satisfies("@5: ~cuda"):
+            # Relion 5 defaults to CUDA=ON so it has to be explicitly disabled.
+            args.append("-DCUDA=OFF")
+
+        if self.spec.satisfies("@5:"):
+            args.append(f"-DPYTHON_EXE_PATH={self.spec['python'].command.path}")
+            args.append("-DFETCH_WEIGHTS=OFF")
 
         return args
 
+    def patch(self):
+        # Remove flags not recognized by the NVIDIA compilers
+        if self.spec.satisfies("%nvhpc"):
+            filter_file("-std=c99", "-c99", "src/apps/CMakeLists.txt")
+
+        # set up some defaults
+        filter_file(
+            r"(#define DEFAULTQSUBLOCATION).*",
+            r'\1 "{0}"'.format(join_path(self.spec.prefix.bin, "relion_qsub.csh")),
+            join_path("src", "pipeline_jobs.h"),
+        )
+        filter_file(
+            r"(#define DEFAULTCTFFINDLOCATION).*",
+            r'\1 "{0}"'.format(join_path(self.spec["ctffind"].prefix.bin, "ctffind")),
+            join_path("src", "pipeline_jobs.h"),
+        )
+
+        if "+external_motioncor2" in self.spec:
+            filter_file(
+                r"(#define DEFAULTMOTIONCOR2LOCATION).*",
+                r'\1 "{0}"'.format(
+                    join_path(self.spec["motioncor2"].prefix.bin, "MotionCor2")
+                ),
+                join_path("src", "pipeline_jobs.h"),
+            )
+
     def setup_run_environment(self, env):
-        env.set("RELION_CTFFIND_EXECUTABLE", "ctffind")
+        env.set("RELION_CTFFIND_EXECUTABLE", self.spec["ctffind"].prefix.bin.ctffind)
         if self.spec.satisfies("@5.0.1:"):
             env.set("RELION_QSUB_TEMPLATE", "/appl/scripts/relion5.sh")
-        if self.spec.satisfies("@3.1.4:"):
+        elif self.spec.satisfies("@3.1.4:"):
             env.set("RELION_QSUB_TEMPLATE", "/appl/scripts/relion31.sh")
-        if self.spec.satisfies("@3.0.8:"):
+        elif self.spec.satisfies("@3.0.8:"):
             env.set("RELION_QSUB_TEMPLATE", "/appl/scripts/relion30.sh")
         env.set("RELION_QUEUE_USE", "yes")
         env.set("RELION_QUEUE_NAME", "p.cryo")
