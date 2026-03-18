@@ -106,8 +106,8 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("libtiff")
     depends_on("libpng", when="@4:")
 
-    depends_on("cuda@9:", when="@4: +cuda")
-    depends_on("cuda@9:11.4", when="@3:3 +cuda")
+    depends_on("cuda@11.6:", when="@4: +cuda")
+    depends_on("cuda@11.6:11.8+allow-unsupported-compilers", when="@3:3 +cuda")
     conflicts("cuda@13:", when="@:5.0.0 +cuda")
     depends_on("tbb", when="+altcpu")
     depends_on("mkl", when="+mklfft")
@@ -138,6 +138,16 @@ class Relion(CMakePackage, CudaPackage):
         when="@4.0.0",
     )
     patch("cudarch-override.patch", when="@5: +cuda")
+
+    def patch(self):
+        # For CUDA >= 11.6, disable bundled CUB to avoid namespace conflicts
+        if self.spec.satisfies("@:3 +cuda ^cuda@11.6:"):
+            filter_file(
+                r'#include "cub/cub.cuh"',
+                "#include <cub/cub.cuh>",
+                "src/acc/cuda/cuda_mem_utils.h",
+                string=True,
+            )
 
     def cmake_args(self):
         args = [
