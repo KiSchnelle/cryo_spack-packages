@@ -100,6 +100,10 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("binutils@2.32:", type="build")
     depends_on("fftw precision=float,double", when="~mklfft")
 
+    conflicts(
+        "%gcc@12:", when="@:3 +cuda", msg="RELION 3.x + CUDA requires GCC 11 or older"
+    )
+
     # use the +xft variant so the interface is not so horrible looking
     depends_on("fltk+xft", when="+gui")
 
@@ -107,7 +111,7 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("libpng", when="@4:")
 
     depends_on("cuda@11.6:", when="@4: +cuda")
-    depends_on("cuda@11.6:11.8+allow-unsupported-compilers", when="@3:3 +cuda")
+    depends_on("cuda@11.6:11.8", when="@3:3 +cuda")
     conflicts("cuda@13:", when="@:5.0.0 +cuda")
     depends_on("tbb", when="+altcpu")
     depends_on("mkl", when="+mklfft")
@@ -178,11 +182,7 @@ class Relion(CMakePackage, CudaPackage):
             args.append("-DFETCH_WEIGHTS=OFF")
 
         if self.spec.satisfies("@:3 +cuda ^cuda@11.6:"):
-            args.append(
-                "-DCUDA_NVCC_FLAGS=--allow-unsupported-compiler;-DCUB_NS_QUALIFIER=::cub"
-            )
-        elif self.spec.satisfies("@:3 +cuda"):
-            args.append("-DCUDA_NVCC_FLAGS=--allow-unsupported-compiler")
+            args.append("-DCUDA_NVCC_FLAGS=-DCUB_NS_QUALIFIER=::cub")
 
         return args
 
