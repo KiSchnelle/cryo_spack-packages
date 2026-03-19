@@ -75,15 +75,7 @@ class Aretomo2(MakefilePackage, CudaPackage):
             f"CUFLAG = -Xptxas -dlcm=ca -O2 {cuda_gencode}",
         )
         # Remove the old multi-line gencode entries
-        for line in [
-            r"\s*-gencode arch=compute_75,code=sm_75.*",
-            r"\s*-gencode arch=compute_70,code=sm_70.*",
-            r"\s*-gencode arch=compute_61,code=sm_61.*",
-            r"\s*-gencode arch=compute_60,code=sm_60.*",
-            r"\s*-gencode arch=compute_53,code=sm_53.*",
-            r"\s*-gencode arch=compute_52,code=sm_52.*",
-        ]:
-            makefile.filter(line, "")
+        makefile.filter(r"\s*-gencode arch=compute_\d+,code=sm_\d+.*", "")
 
         # Add CUDA stubs path for -lcuda (driver lib not in build container)
         makefile.filter("-lcuda", f"-L{stubs} -lcuda")
