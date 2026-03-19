@@ -29,6 +29,7 @@ class Aretomo2(MakefilePackage, CudaPackage):
     depends_on("c", type="build")  # Not really, but CUDA does
     depends_on("cxx", type="build")
     depends_on("gmake", type="build")
+    depends_on("cuda@11:", type=("build", "link"))
 
     conflicts("~cuda")
     conflicts(
@@ -43,13 +44,55 @@ class Aretomo2(MakefilePackage, CudaPackage):
         env.prepend_path("LIBRARY_PATH", self.spec["cuda"].prefix.lib64.stub)
 
     def edit(self, spec, prefix):
-        cuda_arch = self.spec.variants["cuda_arch"].value
+        cuda = spec["cuda"]
+        cuda_arch = spec.variants["cuda_arch"].value
         cuda_gencode = " ".join(self.cuda_flags(cuda_arch))
+        stubs = cuda.prefix.lib64.stubs
 
         makefile = FileFilter("makefile")
-        makefile.filter("NVCC = .*", "NVCC = nvcc -std=c++11")
-        makefile.filter("CUDAHOME = .*", f"CUDAHOME = {self.spec['cuda'].prefix}")
-        makefile.filter("CUDA_GENCODE =.*", f"CUDA_GENCODE = {cuda_gencode}")
+
+        # Set CUDA paths
+        makefile.filter(
+            r"CUDAHOME = .*",
+            f"CUDAHOME = {cuda.prefix}",
+        )
+
+        # Use Spack's compiler wrappers instead of hardcoded g++
+        makefile.filter(
+            r"^CC = g\+\+ -std=c\+\+11",
+            "CC = c++ -std=c++11",
+        )
+
+        # Use nvcc from CUDA toolkit
+        makefile.filter(
+            r"NVCC = \$\(CUDAHOME\)/bin/nvcc -std=c\+\+11",
+            f"NVCC = {cuda.prefix}/bin/nvcc -std=c++11",
+        )
+
+        # Set CUDA arch flags
+        makefile.filter(
+            r"CUFLAG = -Xptxas -dlcm=ca -O2 \\.*",
+            f"CUFLAG = -Xptxas -dlcm=ca -O2 {cuda_gencode}",
+        )
+        # Remove the old multi-line gencode entries
+        for line in [
+            r"\s*-gencode arch=compute_75,code=sm_75.*",
+            r"\s*-gencode arch=compute_70,code=sm_70.*",
+            r"\s*-gencode arch=compute_61,code=sm_61.*",
+            r"\s*-gencode arch=compute_60,code=sm_60.*",
+            r"\s*-gencode arch=compute_53,code=sm_53.*",
+            r"\s*-gencode arch=compute_52,code=sm_52.*",
+        ]:
+            makefile.filter(line, "")
+
+        # Add CUDA stubs path for -lcuda (driver lib not in build container)
+        makefile.filter("-lcuda", f"-L{stubs} -lcuda")
+
+        # Fix hardcoded g++ in link line
+        makefile.filter(
+            r"\t@g\+\+ -g -pthread -m64 \$\(OBJS\)",
+            "\t@c++ -g -pthread -m64 $(OBJS)",
+        )
 
     def install(self, spec, prefix):
         mkdir(prefix.bin)
