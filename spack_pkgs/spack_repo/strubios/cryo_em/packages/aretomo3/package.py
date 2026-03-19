@@ -33,6 +33,7 @@ class Aretomo3(MakefilePackage, CudaPackage):
     depends_on("cxx", type="build")
     depends_on("gmake", type="build")
     depends_on("cuda@11:", type=("build", "link"))
+    depends_on("libtiff", type=("build", "link"))
 
     conflicts("~cuda")
     conflicts(
@@ -73,6 +74,17 @@ class Aretomo3(MakefilePackage, CudaPackage):
         )
         # Remove all old gencode continuation lines
         makefile.filter(r"\s*-gencode arch=compute_\d+,code=sm_\d+.*", "")
+
+        # Add libtiff and nvtx include/lib paths
+        tiff = spec["libtiff"]
+        makefile.filter(
+            r"^CFLAG = -c -g -pthread -m64",
+            f"CFLAG = -c -g -pthread -m64 -I{tiff.prefix.include} -I{cuda.prefix.include}",
+        )
+        makefile.filter(
+            r"^CUFLAG = (.*)",
+            f"CUFLAG = \\1 -I{tiff.prefix.include}",
+        )
 
         # Add stubs path for -lcuda (driver lib not in build container)
         makefile.filter("-lcuda", f"-L{stubs} -lcuda")
