@@ -18,6 +18,7 @@ class Topaz(PythonPackage):
 
     version("0.3.18", tag="v0.3.18")
 
+    depends_on("python@3.8:3.13.0", when="@0.3.18")
     depends_on("py-setuptools", type="build")
     depends_on("py-torch@1:", type=("build", "run"))
     depends_on("py-torchvision", type=("build", "run"))
