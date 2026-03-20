@@ -38,10 +38,8 @@ class Aretomo2(MakefilePackage, CudaPackage):
 
     build_targets = ["exe"]
 
-    patch("cuda_arch_makefile.patch")
-
     def setup_build_environment(self, env):
-        env.prepend_path("LIBRARY_PATH", self.spec["cuda"].prefix.lib64.stub)
+        env.prepend_path("LIBRARY_PATH", self.spec["cuda"].prefix.lib64.stubs)
 
     def edit(self, spec, prefix):
         cuda = spec["cuda"]
