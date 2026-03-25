@@ -21,7 +21,7 @@ class Aretomo3(MakefilePackage, CudaPackage):
 
     license("BSD-3-Clause")
 
-    version("main", branch="main")
+    version("main", branch="main", preferred=True)
     version(
         "2.2.2",
         sha256="ee0a6bae8b541e1a1dd3465cf1e7d0bf4ee70b030662c55f2b583d678bb33fa9",
@@ -40,6 +40,11 @@ class Aretomo3(MakefilePackage, CudaPackage):
     conflicts("~cuda")
     conflicts(
         "cuda_arch=none", when="+cuda", msg="A value for cuda_arch must be specified."
+    )
+    conflicts(
+        "^cuda@13:",
+        when="@:2",
+        msg="CUDA 13+ requires @main (makefile13 not in releases)",
     )
 
     @property
