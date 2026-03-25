@@ -29,7 +29,7 @@ class Aretomo2(MakefilePackage, CudaPackage):
     depends_on("c", type="build")  # Not really, but CUDA does
     depends_on("cxx", type="build")
     depends_on("gmake", type="build")
-    depends_on("cuda@11:", type=("build", "link"))
+    depends_on("cuda@11:12", type=("build", "link"))
 
     conflicts("~cuda")
     conflicts(
