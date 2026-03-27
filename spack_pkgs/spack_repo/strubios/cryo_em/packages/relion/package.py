@@ -104,10 +104,6 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("binutils@2.32:", type="build")
     depends_on("fftw precision=float,double", when="~mklfft")
 
-    conflicts(
-        "%gcc@12:", when="@:3 +cuda", msg="RELION 3.x + CUDA requires GCC 11 or older"
-    )
-
     # use the +xft variant so the interface is not so horrible looking
     depends_on("fltk+xft", when="+gui")
 
@@ -127,13 +123,28 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("xz", type="run", when="@5.0.0:")
     depends_on("zstd", type="run", when="@5.0.0:")
 
-    for arch in CudaPackage.cuda_arch_values:
+    # CUDA-aware deps — propagate cuda_arch
+    for _arch in CudaPackage.cuda_arch_values:
         depends_on(
-            f"py-relion@5.0.1 +cuda cuda_arch={arch}",
+            f"py-relion@5.0.1:+cuda cuda_arch={_arch}",
+            when=f"@5.0.1+cuda cuda_arch={_arch}",
             type=("build", "run"),
-            when=f"@5.0.0: +cuda cuda_arch={arch}",
         )
-    depends_on("py-relion@5.0.1 ~cuda", type=("build", "run"), when="@5.0.1 ~cuda")
+        depends_on(
+            f"py-relion@5.1.0: +cuda cuda_arch={_arch}",
+            when=f"@5.1.0 +cuda cuda_arch={_arch}",
+            type=("build", "run"),
+        )
+    depends_on(
+        "py-relion@5.0.1 ~cuda",
+        type=("build", "run"),
+        when="@5.0.1 ~cuda",
+    )
+    depends_on(
+        "py-relion@5.1.0: ~cuda",
+        type=("build", "run"),
+        when="@5.1.0: ~cuda",
+    )
 
     patch(
         "0002-Simple-patch-to-fix-intel-mkl-linking.patch",
