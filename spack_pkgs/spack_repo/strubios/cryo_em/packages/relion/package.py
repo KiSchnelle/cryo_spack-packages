@@ -15,7 +15,7 @@ class Relion(CMakePackage, CudaPackage):
 
     homepage = "https://www2.mrc-lmb.cam.ac.uk/relion"
     git = "https://github.com/3dem/relion.git"
-    url = "https://github.com/3dem/relion/archive/4.0.0.zip"
+    url = "https://github.com/3dem/relion/archive/5.1.0.zip"
     maintainers("dacolombo", "Markus92")
 
     license("GPL-2.0-only")
@@ -100,7 +100,7 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("c", type="build")
     depends_on("cxx", type="build")
     depends_on("mpi")
-    depends_on("cmake@3:", type="build")
+    depends_on("cmake@3:3.2.6", type="build")
     depends_on("binutils@2.32:", type="build")
     depends_on("fftw precision=float,double", when="~mklfft")
 
@@ -114,25 +114,24 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("libtiff")
     depends_on("libpng", when="@4:")
 
-    depends_on("cuda@11.6:", when="@4: +cuda")
-    depends_on("cuda@11.6:11.8", when="@3:3 +cuda")
-    conflicts("cuda@13:", when="@:5.0.0 +cuda")
+    depends_on("cuda@11.6:11.8", when="@3.0.7:4.0.1 +cuda")
+    depends_on("cuda@12:", when="@5.0.0: +cuda")
     depends_on("tbb", when="+altcpu")
     depends_on("mkl", when="+mklfft")
-    depends_on("ctffind@4.1:4", type="run", when="@5")
-    depends_on("ctffind@:4", type="run")
+    depends_on("ctffind@4.1:4", type="run", when="@5.0.0:")
+    depends_on("ctffind@:4", type="run", when="@:4.0.1")
     depends_on("motioncor2", type="run", when="+external_motioncor2")
 
-    depends_on("ghostscript", type="run", when="@4:")
-    depends_on("pbzip2", type="run", when="@5:")
-    depends_on("xz", type="run", when="@5:")
-    depends_on("zstd", type="run", when="@5:")
+    depends_on("ghostscript", type="run", when="@4.0.0:")
+    depends_on("pbzip2", type="run", when="@5.0.0:")
+    depends_on("xz", type="run", when="@5.0.0:")
+    depends_on("zstd", type="run", when="@5.0.0:")
 
     for arch in CudaPackage.cuda_arch_values:
         depends_on(
             f"py-relion@5.0.1 +cuda cuda_arch={arch}",
             type=("build", "run"),
-            when=f"@5.0.1 +cuda cuda_arch={arch}",
+            when=f"@5.0.0: +cuda cuda_arch={arch}",
         )
     depends_on("py-relion@5.0.1 ~cuda", type=("build", "run"), when="@5.0.1 ~cuda")
 

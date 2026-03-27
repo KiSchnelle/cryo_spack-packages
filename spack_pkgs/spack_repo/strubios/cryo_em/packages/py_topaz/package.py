@@ -6,7 +6,7 @@ from spack.package import *
 from spack_repo.builtin.build_systems.python import PythonPackage
 
 
-class Topaz(PythonPackage):
+class PyTopaz(PythonPackage):
     """topaz: Pipeline for particle picking in cryo-electron microscopy images using
     convolutional neural networks trained from positive and unlabeled examples. Also
     featuring micrograph and tomogram denoising with DNNs."""

@@ -11,8 +11,6 @@ class Phenix(Package):
     # Point this URL to your downloaded file
     url = "file:////sbdata/software/download/phenix-installer-1.21.2-5419-intel-linux-2.6-x86_64-centos6.tar"
 
-    maintainers = ["your-github-username"]
-
     version(
         "1.20.1-5419",
         sha256="9fd612dd2b318b7723144845ac92aef3b7b23f7664c41a062995e4833328d150",
