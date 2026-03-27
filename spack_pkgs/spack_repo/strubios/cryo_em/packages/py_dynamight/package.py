@@ -7,7 +7,7 @@ from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.python import PythonPackage
 
 
-class PyDynaMight(PythonPackage, CudaPackage):
+class PyDynamight(PythonPackage, CudaPackage):
     """ModelAngelo is an automatic atomic model building program for cryo-EM maps."""
 
     homepage = "https://github.com/3dem/DynaMight"
