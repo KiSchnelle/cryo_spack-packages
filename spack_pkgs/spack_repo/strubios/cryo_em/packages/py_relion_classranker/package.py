@@ -33,4 +33,4 @@ class PyRelionClassranker(PythonPackage, CudaPackage):
     depends_on("py-torch~cuda", when="~cuda", type=("build", "run"))
 
     depends_on("py-torchvision@0.15.2:", type=("build", "run"))
-    depends_on("py-numpy@1.24.4", type=("build", "run"))
+    depends_on("py-numpy@1.24.4:", type=("build", "run"))
