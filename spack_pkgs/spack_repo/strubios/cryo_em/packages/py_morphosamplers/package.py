@@ -6,7 +6,7 @@ from spack.package import *
 from spack_repo.builtin.build_systems.python import PythonPackage
 
 
-class PyMorphsamplers(PythonPackage):
+class PyMorphosamplers(PythonPackage):
     """
     MorphoSamplers is a Python library for sampling-based methods in cryo-EM image processing,
     including particle picking, 2D classification, and 3D reconstruction.
