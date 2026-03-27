@@ -26,7 +26,15 @@ class PyNapariThreedee(PythonPackage):
     depends_on("python@3.10:", type=("build", "run"))
 
     depends_on("py-einops", type=("build", "run"))
-    depends_on("py-imageio@2.5.0,!=2.11.0,!=2.22.1", type=("build", "run"))
+    depends_on("py-imageio@2.5.0:", type=("build", "run"))
+    conflicts(
+        "^py-imageio@2.11.0",
+        msg="py-imageio 2.11.0 is incompatible with py-napari-threedee",
+    )
+    conflicts(
+        "^py-imageio@2.22.1",
+        msg="py-imageio 2.22.1 is incompatible with py-napari-threedee",
+    )
     depends_on("py-libigl", type=("build", "run"))
     depends_on("py-magicgui", type=("build", "run"))
     depends_on("py-morphosamplers", type=("build", "run"))
