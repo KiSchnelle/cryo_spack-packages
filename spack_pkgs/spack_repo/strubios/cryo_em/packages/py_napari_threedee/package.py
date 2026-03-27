@@ -18,12 +18,13 @@ class PyNapariThreedee(PythonPackage):
     license("BSD-3-Clause")
 
     version(
-        "0.0.29",
-        sha256="478c2522ae79b1fa48341d34dd60cdd6139be7418c176ef9f9228b7eed0d8412",
+        "0.0.21",
+        sha256="fb10e0031b45de6ed40d315e1df5e02337c7dca23f08235f465b7b8bf9bda012",
     )
 
-    depends_on("py-hatchling", type="build")
-    depends_on("python@3.10:", type=("build", "run"))
+    depends_on("py-setuptools", type="build")
+    depends_on("py-setuptools-scm", type="build")
+    depends_on("python@3.8:", type=("build", "run"))
 
     depends_on("py-einops", type=("build", "run"))
     depends_on("py-imageio@2.5.0:", type=("build", "run"))
@@ -39,7 +40,7 @@ class PyNapariThreedee(PythonPackage):
     depends_on("py-magicgui", type=("build", "run"))
     depends_on("py-morphosamplers", type=("build", "run"))
     depends_on("py-mrcfile", type=("build", "run"))
-    depends_on("py-napari@0.5.0:", type=("build", "run"))
+    depends_on("py-napari@:4", type=("build", "run"))
     depends_on("py-numpy", type=("build", "run"))
     depends_on("py-pandas", type=("build", "run"))
     depends_on("py-pooch", type=("build", "run"))
