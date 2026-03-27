@@ -109,7 +109,7 @@ class PyRelion(PythonPackage, CudaPackage):
     depends_on("py-dill@0.3.7", type=("build", "run"))
     depends_on("py-numpy@1.26.1", type=("build", "run"))
     depends_on("py-scipy@1.11.2", type=("build", "run"))
-    depends_on("py-scan@0.2.12", type=("build", "run"), when="@5.1.0")
+    depends_on("py-skan@0.2.12", type=("build", "run"), when="@5.1.0")
     depends_on("py-opencv-python@4.10.0.84", type=("build", "run"), when="@5.1.0")
 
     # relion pyproject.toml deps
