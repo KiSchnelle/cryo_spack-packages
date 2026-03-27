@@ -24,7 +24,7 @@ class PyLibigl(PythonPackage):
 
     depends_on("py-nanobind@1.3.2:", type="build")
     depends_on("py-numpy@2.0.0", type=("build", "run"), when="^python@3.9:")
-    depends_on("py-numpy<2.0.0", type=("build", "run"), when="^python@3.8")
+    depends_on("py-numpy@:1", type=("build", "run"), when="^python@3.8")
     depends_on("py-packaging", type="build")
     depends_on("py-scikit-build-core@0.10:+pyproject", type="build")
     depends_on("py-scipy", type=("build", "run"))
