@@ -28,6 +28,6 @@ class PyLibigl(PythonPackage):
     depends_on("py-packaging", type="build")
     depends_on("py-scikit-build-core@0.10:+pyproject", type="build")
     depends_on("py-scipy", type=("build", "run"))
-    depends_on("py-typing_extensions", type="build")
+    depends_on("py-typing-extensions", type="build")
     depends_on("python@3.8:", type=("build", "run"))
     depends_on("py-numpy", type=("run"))
