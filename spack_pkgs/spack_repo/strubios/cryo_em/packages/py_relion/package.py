@@ -89,7 +89,6 @@ class PyRelion(PythonPackage, CudaPackage):
     depends_on("py-topaz-3dem~cuda", when="~cuda", type=("build", "run"))
     depends_on("py-model-angelo~cuda", when="~cuda", type=("build", "run"))
 
-    depends_on("py-morphosamplers", type=("build", "run"))
     depends_on("py-torchvision@0.15.2", type=("build", "run"), when="@5.0.1")
     depends_on("py-tqdm@4.65.0", type=("build", "run"))
     depends_on("py-mrcfile@1.4.3", type=("build", "run"))
@@ -98,11 +97,14 @@ class PyRelion(PythonPackage, CudaPackage):
     depends_on("py-scikit-learn@1.3.0", type=("build", "run"))
     depends_on("py-umap-learn@0.5.3", type=("build", "run"))
     depends_on("py-matplotlib@3.7.2", type=("build", "run"))
+    depends_on("py-morphosamplers@0.0.13", type=("build", "run"))
     depends_on("py-pydantic@1.10.18", type=("build", "run"))
     depends_on("py-napari+all@0.4.18", type=("build", "run"))
+    depends_on("py-napari-threedee@0.0.28", type=("build", "run"))
+    depends_on("py-psygnal@0.11.1", type=("build", "run"))
     depends_on("py-pyqt5@5.15.9", type=("build", "run"))
     depends_on("py-typer@0.9.0", type=("build", "run"))
-    depends_on("py-click@:8.2.0", type=("build", "run"))
+    depends_on("py-click@:8.1.9", type=("build", "run"))
     depends_on("py-biopython@1.81", type=("build", "run"))
     depends_on("py-fastcluster@1.2.6", type=("build", "run"))
     depends_on("py-seaborn@0.12.2", type=("build", "run"))
@@ -123,9 +125,7 @@ class PyRelion(PythonPackage, CudaPackage):
     depends_on("py-superqt", type=("build", "run"))
 
     # relion pyproject.toml deps[vis]
-    depends_on("py-napari-threedee", type=("build", "run"))
     depends_on("py-qtpy", type=("build", "run"))
-    depends_on("py-psygnal", type=("build", "run"))
 
     # Set version so setuptools won't complain about not being able to determine it
     def setup_build_environment(self, env):

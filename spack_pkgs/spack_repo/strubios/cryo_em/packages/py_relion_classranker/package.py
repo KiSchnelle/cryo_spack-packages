@@ -26,11 +26,11 @@ class PyRelionClassranker(PythonPackage, CudaPackage):
     # CUDA-aware deps — propagate cuda_arch
     for _arch in CudaPackage.cuda_arch_values:
         depends_on(
-            f"py-torch+cuda cuda_arch={_arch}",
+            f"py-torch@2.0.1:+cuda cuda_arch={_arch}",
             when=f"+cuda cuda_arch={_arch}",
             type=("build", "run"),
         )
-    depends_on("py-torch~cuda", when="~cuda", type=("build", "run"))
+    depends_on("py-torch@2.0.1:~cuda", when="~cuda", type=("build", "run"))
 
     depends_on("py-torchvision@0.15.2:", type=("build", "run"))
     depends_on("py-numpy@1.24.4:", type=("build", "run"))

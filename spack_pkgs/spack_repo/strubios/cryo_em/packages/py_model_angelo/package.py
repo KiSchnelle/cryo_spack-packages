@@ -47,7 +47,7 @@ class PyModelAngelo(PythonPackage, CudaPackage):
     depends_on("py-fair-esm@1.0.3", type=("build", "run"))
     depends_on("py-pyhmmer@0.7.1", type=("build", "run"))
     depends_on("py-loguru", type=("build", "run"))
-    depends_on("py-numpy@1", type=("build", "run"))
+    depends_on("py-numpy@:1", type=("build", "run"))
 
     def setup_run_environment(self, env):
         env.set("TORCH_HOME", str(self.prefix.share.model_angelo))

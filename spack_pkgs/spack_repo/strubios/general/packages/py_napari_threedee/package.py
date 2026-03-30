@@ -13,10 +13,14 @@ class PyNapariThreedee(PythonPackage):
     """
 
     homepage = "https://github.com/napari-threedee/napari-threedee"
-    pypi = "napari-threedee/napari-threedee-0.0.29.tar.gz"
+    pypi = "napari-threedee/napari-threedee-0.0.28.tar.gz"
 
     license("BSD-3-Clause")
 
+    version(
+        "0.0.28",
+        sha256="c6e9f9262e2c627473b15dc8de615549b1b4cdbf14744659b5eda5ffe5446c6a",
+    )
     version(
         "0.0.21",
         sha256="fb10e0031b45de6ed40d315e1df5e02337c7dca23f08235f465b7b8bf9bda012",
