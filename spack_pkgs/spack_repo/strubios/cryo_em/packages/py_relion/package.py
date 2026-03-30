@@ -115,14 +115,14 @@ class PyRelion(PythonPackage, CudaPackage):
     depends_on("py-opencv-python@4.10.0.84", type=("build", "run"), when="@5.1.0")
 
     # relion pyproject.toml deps
-    depends_on("py-pandas", type=("build", "run"))
-    depends_on("py-mdocfile", type=("build", "run"))
-    depends_on("py-rich", type=("build", "run"))
-    depends_on("py-einops", type=("build", "run"))
-    depends_on("py-lil-aretomo", type=("build", "run"))
-    depends_on("py-makefun", type=("build", "run"))
-    depends_on("py-lru-dict", type=("build", "run"))
-    depends_on("py-superqt", type=("build", "run"))
+    # depends_on("py-pandas", type=("build", "run"))
+    # depends_on("py-mdocfile", type=("build", "run"))
+    # depends_on("py-rich", type=("build", "run"))
+    # depends_on("py-einops", type=("build", "run"))
+    # depends_on("py-lil-aretomo", type=("build", "run"))
+    # depends_on("py-makefun", type=("build", "run"))
+    # depends_on("py-lru-dict", type=("build", "run"))
+    # depends_on("py-superqt", type=("build", "run"))
 
     # relion pyproject.toml deps[vis]
     depends_on("py-qtpy", type=("build", "run"))
