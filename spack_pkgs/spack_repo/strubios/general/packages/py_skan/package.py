@@ -21,7 +21,7 @@ class PySkan(PythonPackage):
         sha256="5c9e5c2dc169f2f4972b085f311a5961ba4351cafa57ff0c5aa418ac6f05a1d6",
     )
 
-    depends_on("py-setuptools@45:", type="build")
+    depends_on("py-setuptools", type="build")
     depends_on("py-setuptools-scm@6.2:", type="build")
     depends_on("py-wheel", type="build")
     depends_on("python@3.9:", type=("build", "run"))

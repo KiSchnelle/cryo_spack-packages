@@ -69,7 +69,7 @@ class PyPydantic(PythonPackage):
 
     depends_on("python@3.8:", type="build", when="@2")
     depends_on("python@3.9:", type="build", when="@2.11.0:")
-    depends_on("py-setuptools@68:", type="build", when="@1.10.20:1")
+    depends_on("py-setuptools", type="build", when="@1.10.20:1")
     depends_on("py-setuptools", type="build", when="@1")
     depends_on("py-cython@3:", type="build", when="@1.10.20:1")
     depends_on("py-hatchling", type="build", when="@2")

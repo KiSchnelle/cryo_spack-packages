@@ -45,7 +45,7 @@ class PyPyfftw(PythonPackage):
     depends_on("python@3.9:", type=("build", "run"), when="@0.14.0:")
     depends_on("python@3.8:3.11", type=("build", "run"), when="@:0.13.1")
 
-    depends_on("py-setuptools@:59.4.0", type="build")
+    depends_on("py-setuptools", type="build")
 
     depends_on("py-cython@3.0:3", type="build", when="@0.14.0:")
     depends_on("py-cython@0.29.18:0", type="build", when="@0.13.0:0.13")

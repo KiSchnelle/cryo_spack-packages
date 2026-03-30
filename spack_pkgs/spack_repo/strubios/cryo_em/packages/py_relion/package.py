@@ -33,7 +33,7 @@ class PyRelion(PythonPackage, CudaPackage):
     variant("cuda", default=True, description="Build with CUDA (recommended)")
 
     depends_on("python@3.10:", type=("build", "run"))
-    depends_on("py-setuptools@45:", type="build")
+    depends_on("py-setuptools", type="build")
     depends_on("py-wheel", type="build")
     depends_on("py-setuptools-scm@6.3:", type="build")
 

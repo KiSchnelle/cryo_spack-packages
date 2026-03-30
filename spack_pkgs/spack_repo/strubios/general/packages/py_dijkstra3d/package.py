@@ -22,7 +22,7 @@ class PyDijkstra3d(PythonPackage):
         sha256="99a586e683cffb08aadb9f60f2c899a45cf9624fe0f3e4b9abce658b6841f8b3",
     )
 
-    depends_on("py-setuptools@42:", type="build")
+    depends_on("py-setuptools", type="build")
     depends_on("py-wheel", type="build")
     depends_on("py-cython", type="build")
     depends_on("python@3.8:", type=("build", "run"))
