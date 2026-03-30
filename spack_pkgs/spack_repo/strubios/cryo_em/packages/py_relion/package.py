@@ -33,7 +33,7 @@ class PyRelion(PythonPackage, CudaPackage):
     variant("cuda", default=True, description="Build with CUDA (recommended)")
 
     depends_on("python@3.10:", type=("build", "run"))
-    depends_on("py-setuptools@59.5.0", type="build")
+    depends_on("py-setuptools@45:", type="build")
     depends_on("py-wheel", type="build")
     depends_on("py-setuptools-scm@6.3:", type="build")
 
@@ -109,7 +109,7 @@ class PyRelion(PythonPackage, CudaPackage):
     depends_on("py-fastcluster@1.2.6", type=("build", "run"))
     depends_on("py-seaborn@0.12.2", type=("build", "run"))
     depends_on("py-dill@0.3.7", type=("build", "run"))
-    depends_on("py-numpy@1.26.1", type=("build", "run"))
+    depends_on("py-numpy@:2", type=("build", "run"))
     depends_on("py-scipy@1.11.2", type=("build", "run"))
     depends_on("py-skan@0.12.2", type=("build", "run"), when="@5.1.0")
     depends_on("py-opencv-python@4.10.0.84", type=("build", "run"), when="@5.1.0")

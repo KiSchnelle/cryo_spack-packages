@@ -23,8 +23,7 @@ class PyOpencvPython(PythonPackage):
     depends_on("cxx", type="build")
 
     depends_on("cmake@3.1:", type="build")
-    # depends_on("py-numpy@2:", type=("build", "run"), when="^python@3.9:")
-    # depends_on("py-numpy@:2", type=("build", "run"), when="^python@:3.8")
+    depends_on("py-numpy@2:", type=("build", "run"), when="^python@3.9:")
+    depends_on("py-numpy@:2", type=("build", "run"), when="^python@:3.8")
     depends_on("py-pip", type="build")
     depends_on("py-scikit-build", type="build")
-    depends_on("py-numpy", type=("build", "run"))
