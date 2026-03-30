@@ -40,12 +40,12 @@ class PyRelion(PythonPackage, CudaPackage):
     # CUDA-aware deps — propagate cuda_arch
     for _arch in CudaPackage.cuda_arch_values:
         depends_on(
-            f"py-torch@2.0.1+cuda cuda_arch={_arch}",
+            f"py-torch@2.0.1:+cuda cuda_arch={_arch}",
             when=f"@5.0.1 +cuda cuda_arch={_arch}",
             type=("build", "run"),
         )
         depends_on(
-            f"py-torch@2.7.1+cuda cuda_arch={_arch}",
+            f"py-torch@2.7.1:+cuda cuda_arch={_arch}",
             when=f"@5.1.0 +cuda cuda_arch={_arch}",
             type=("build", "run"),
         )
@@ -80,8 +80,8 @@ class PyRelion(PythonPackage, CudaPackage):
             type=("build", "run"),
         )
 
-    depends_on("py-torch@2.0.1~cuda", when="@5.0.1 ~cuda", type=("build", "run"))
-    depends_on("py-torch@2.7.1~cuda", when="@5.1.0 ~cuda", type=("build", "run"))
+    depends_on("py-torch@2.0.1:~cuda", when="@5.0.1 ~cuda", type=("build", "run"))
+    depends_on("py-torch@2.7.1:~cuda", when="@5.1.0 ~cuda", type=("build", "run"))
     depends_on("tsne-cuda~cuda+python@3.0.1", when="~cuda", type=("build", "run"))
     depends_on("py-relion-classranker~cuda", when="~cuda", type=("build", "run"))
     depends_on("py-relion-blush~cuda", when="~cuda", type=("build", "run"))
