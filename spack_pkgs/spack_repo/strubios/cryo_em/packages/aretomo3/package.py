@@ -31,7 +31,6 @@ class Aretomo3(MakefilePackage, CudaPackage):
         sha256="1a57a861e2598e56a98b9c2c8dde326b72a58cfa83eb5f542366982acd6acf4d",
     )
 
-    depends_on("c", type="build")
     depends_on("cxx", type="build")
     depends_on("gmake", type="build")
     depends_on("cuda@12:", type=("build", "link"))
