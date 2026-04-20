@@ -53,6 +53,11 @@ class Aretomo3(MakefilePackage, CudaPackage):
             return "makefile13"
         return "makefile11"
 
+    def setup_build_environment(self, env):
+        tiff = self.spec["libtiff"]
+        env.prepend_path("LIBRARY_PATH", tiff.prefix.lib)
+        env.prepend_path("LIBRARY_PATH", tiff.prefix.lib64)
+
     @property
     def build_directory(self):
         return self.stage.source_path
