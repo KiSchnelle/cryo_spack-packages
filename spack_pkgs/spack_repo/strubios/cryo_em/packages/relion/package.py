@@ -100,7 +100,7 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("c", type="build")
     depends_on("cxx", type="build")
     depends_on("mpi")
-    depends_on("cmake@3:3.2.6", type="build")
+    depends_on("cmake@3:", type="build")
     depends_on("binutils@2.32:", type="build")
     depends_on("fftw precision=float,double", when="~mklfft")
 
