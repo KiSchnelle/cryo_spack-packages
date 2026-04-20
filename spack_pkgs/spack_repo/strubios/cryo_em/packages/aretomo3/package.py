@@ -80,7 +80,7 @@ class Aretomo3(MakefilePackage, CudaPackage):
         # Replace CUFLAG gencode block
         makefile.filter(
             r"^CUFLAG = -Xptxas -dlcm=ca -O2 \\",
-            f"CUFLAG = -Xptxas -dlcm=ca -O2 {cuda_gencode}",
+            f"CUFLAG = -ccbin {self.compiler.cxx} -Xptxas -dlcm=ca -O2 {cuda_gencode}",
         )
         # Remove all old gencode continuation lines
         makefile.filter(r"^\s+-gencode arch=compute_\d+,code=sm_\d+.*", "")
