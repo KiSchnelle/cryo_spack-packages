@@ -74,13 +74,13 @@ class Aretomo3(MakefilePackage, CudaPackage):
         # Use nvcc directly
         makefile.filter(
             r"^NVCC = \$\(CUDAHOME\)/bin/nvcc",
-            f"NVCC = {cuda.prefix}/bin/nvcc",
+            f"NVCC = {cuda.prefix}/bin/nvcc -ccbin {self.compiler.cxx}",
         )
 
         # Replace CUFLAG gencode block
         makefile.filter(
             r"^CUFLAG = -Xptxas -dlcm=ca -O2 \\",
-            f"CUFLAG = -ccbin {self.compiler.cxx} -Xptxas -dlcm=ca -O2 -I{tiff.prefix.include} {cuda_gencode}",
+            f"CUFLAG = -Xptxas -dlcm=ca -O2 -I{tiff.prefix.include} {cuda_gencode}",
         )
         # Remove all old gencode continuation lines
         makefile.filter(r"^\s+-gencode arch=compute_\d+,code=sm_\d+.*", "")
