@@ -114,14 +114,14 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("cuda@12:", when="@5.0.0: +cuda")
     depends_on("tbb", when="+altcpu")
     depends_on("mkl", when="+mklfft")
-    depends_on("ctffind@4.1:4", type="run", when="@5.0.0:")
+    depends_on("ctffind@4.1:4", type="run", when="@5:")
     depends_on("ctffind@:4", type="run", when="@:4.0.1")
     depends_on("motioncor2", type="run", when="+external_motioncor2")
 
-    depends_on("ghostscript", type="run", when="@4.0.0:")
-    depends_on("pbzip2", type="run", when="@5.0.0:")
-    depends_on("xz", type="run", when="@5.0.0:")
-    depends_on("zstd", type="run", when="@5.0.0:")
+    depends_on("ghostscript", type="run", when="@4:")
+    depends_on("pbzip2", type="run", when="@5:")
+    depends_on("xz", type="run", when="@5:")
+    depends_on("zstd", type="run", when="@5:")
 
     # CUDA-aware deps — propagate cuda_arch
     for _arch in CudaPackage.cuda_arch_values:
@@ -227,11 +227,11 @@ class Relion(CMakePackage, CudaPackage):
 
     def setup_run_environment(self, env):
         env.set("RELION_CTFFIND_EXECUTABLE", self.spec["ctffind"].prefix.bin.ctffind)
-        if self.spec.satisfies("@5.0.1:"):
+        if self.spec.satisfies("@5:"):
             env.set("RELION_QSUB_TEMPLATE", "/appl/scripts/relion5.sh")
-        elif self.spec.satisfies("@3.1.4:"):
+        elif self.spec.satisfies("@3.1"):
             env.set("RELION_QSUB_TEMPLATE", "/appl/scripts/relion31.sh")
-        elif self.spec.satisfies("@3.0.8:"):
+        elif self.spec.satisfies("@3.0"):
             env.set("RELION_QSUB_TEMPLATE", "/appl/scripts/relion30.sh")
         env.set("RELION_QUEUE_USE", "yes")
         env.set("RELION_QUEUE_NAME", "p.cryo")
