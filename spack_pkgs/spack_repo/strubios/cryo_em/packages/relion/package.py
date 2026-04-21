@@ -50,7 +50,7 @@ class Relion(CMakePackage, CudaPackage):
     )
 
     variant("own-fftw", default=True, description="Use bundled FFTW.")
-    variant("amd-fftw", default=True, when="+own-fftw", description="Use AMD's FFTW.")
+    variant("amd-fftw", default=True, description="Use AMD's FFTW.")
     variant("mklfft", default=False, description="Use MKL rather than FFTW for FFT")
 
     conflicts("+mklfft", when="+own-fftw", msg="Cannot use MKL FFT with bundled FFTW")
@@ -60,6 +60,7 @@ class Relion(CMakePackage, CudaPackage):
         when="@:3",
         msg="Bundled FFTW download is unreliable in RELION 3.x, use ~own-fftw with external FFTW",
     )
+    conflicts("+amd-fftw", when="+mklfft", msg="Cannot use AMD FFTW with MKL FFT")
 
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -69,6 +70,7 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("binutils@2.32:", type="build")
 
     depends_on("amdfftw", when="~own-fftw +amd-fftw ~mklfft")
+    depends_on("mkl", when="+mklfft")
     depends_on("fftw precision=float,double", when="~own-fftw ~amd-fftw ~mklfft")
 
     depends_on("ctffind@4", type="run")
@@ -82,8 +84,6 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("zstd", type="run", when="@4:")
 
     depends_on("cuda@11:", when="+cuda")
-
-    depends_on("mkl", when="+mklfft")
 
     # CUDA-aware deps — propagate cuda_arch
     for _arch in CudaPackage.cuda_arch_values:
@@ -114,7 +114,7 @@ class Relion(CMakePackage, CudaPackage):
             "-DDoublePrec_CPU=%s" % ("+double" in self.spec),
             "-DDoublePrec_GPU=%s" % ("+double-gpu" in self.spec),
             "-DFORCE_OWN_FFTW=%s" % ("+own-fftw" in self.spec),
-            "-DAMDFFTW=%s" % ("+amd-fftw" in self.spec),
+            self.define("AMDFFTW", self.spec.satisfies("@4: +amd-fftw")),
             "-DMKLFFT=%s" % ("+mklfft" in self.spec),
         ]
         if self.spec.satisfies("+gui"):
