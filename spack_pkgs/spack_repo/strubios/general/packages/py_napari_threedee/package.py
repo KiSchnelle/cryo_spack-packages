@@ -13,7 +13,7 @@ class PyNapariThreedee(PythonPackage):
     """
 
     homepage = "https://github.com/napari-threedee/napari-threedee"
-    pypi = "napari-threedee/napari-threedee-0.0.28.tar.gz"
+    pypi = "napari-threedee/napari_threedee-0.0.28.tar.gz"
 
     license("BSD-3-Clause")
 
