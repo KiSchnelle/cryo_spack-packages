@@ -59,8 +59,13 @@ class PyModelAngelo(PythonPackage, CudaPackage):
 
         torch_home = self.prefix.share.model_angelo
         mkdirp(torch_home)
-
         os.environ["TORCH_HOME"] = str(torch_home)
+
+        site_pkgs = join_path(self.prefix, self.spec["python"].package.platlib)
+        os.environ["PYTHONPATH"] = (
+            site_pkgs + os.pathsep + os.environ.get("PYTHONPATH", "")
+        )
+
         model_angelo = Executable(join_path(self.prefix.bin, "model_angelo"))
         model_angelo("setup_weights", "--bundle-name", "nucleotides")
         model_angelo("setup_weights", "--bundle-name", "nucleotides_no_seq")
