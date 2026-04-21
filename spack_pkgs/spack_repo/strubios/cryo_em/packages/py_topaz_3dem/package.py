@@ -17,7 +17,7 @@ class PyTopaz3dem(PythonPackage, CudaPackage):
 
     license("GPL-3.0-or-later")
 
-    version("main", branch="main", preferred=True)
+    version("master", branch="master", preferred=True)
 
     depends_on("py-setuptools", type="build")
     depends_on("python@3.8:", type=("build", "run"))
