@@ -54,6 +54,12 @@ class Relion(CMakePackage, CudaPackage):
     variant("mklfft", default=False, description="Use MKL rather than FFTW for FFT")
 
     conflicts("+mklfft", when="+own-fftw", msg="Cannot use MKL FFT with bundled FFTW")
+    conflicts("+amd-fftw", when="@:3", msg="AMDFFTW flag only supported in RELION 4+")
+    conflicts(
+        "+own-fftw",
+        when="@:3",
+        msg="Bundled FFTW download is unreliable in RELION 3.x, use ~own-fftw with external FFTW",
+    )
 
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -61,6 +67,9 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("mpi")
     depends_on("cmake@3:", type="build")
     depends_on("binutils@2.32:", type="build")
+
+    depends_on("amdfftw", when="~own-fftw +amd-fftw ~mklfft")
+    depends_on("fftw precision=float,double", when="~own-fftw ~amd-fftw ~mklfft")
 
     depends_on("ctffind@4", type="run")
     depends_on("ghostscript", type="run", when="@4:")
