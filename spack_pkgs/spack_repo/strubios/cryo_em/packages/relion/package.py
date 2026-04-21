@@ -57,6 +57,7 @@ class Relion(CMakePackage, CudaPackage):
 
     depends_on("c", type="build")
     depends_on("cxx", type="build")
+    depends_on("fortran", type="build", when="+own-fftw")
     depends_on("mpi")
     depends_on("cmake@3:", type="build")
     depends_on("binutils@2.32:", type="build")
