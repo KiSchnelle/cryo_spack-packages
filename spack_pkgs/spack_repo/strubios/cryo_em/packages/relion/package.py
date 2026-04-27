@@ -83,7 +83,8 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("xz", type="run", when="@4:")
     depends_on("zstd", type="run", when="@4:")
 
-    depends_on("cuda@11:", when="+cuda")
+    depends_on("cuda@12:", when="@4: +cuda")
+    depends_on("cuda@11:11", when="@:3 +cuda")
 
     # CUDA-aware deps — propagate cuda_arch
     for _arch in CudaPackage.cuda_arch_values:
