@@ -29,7 +29,7 @@ class PyUcsfPyem(PythonPackage):
     depends_on("py-setuptools", type="build")
 
     depends_on("py-numba@0.41:")
-    depends_on("py-numpy@1.26:")
+    depends_on("py-numpy@1.26:1")
     depends_on("py-numexpr@2.8:")
     depends_on("py-scipy@1.2:")
     depends_on("py-matplotlib@2.2:")
