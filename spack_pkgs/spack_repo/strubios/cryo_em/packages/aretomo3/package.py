@@ -21,7 +21,13 @@ class Aretomo3(MakefilePackage, CudaPackage):
 
     license("BSD-3-Clause")
 
-    version("main", branch="main", preferred=True)
+    version("main", branch="main")
+    # Upstream stopped tagging after v2.2.2, so newer versions are pinned by commit.
+    version(
+        "2.3.3",
+        commit="6b4d6b38e0f1bec7ca2344badeaa795665a38b7f",
+        preferred=True,
+    )
     version(
         "2.2.2",
         sha256="ee0a6bae8b541e1a1dd3465cf1e7d0bf4ee70b030662c55f2b583d678bb33fa9",
@@ -42,16 +48,24 @@ class Aretomo3(MakefilePackage, CudaPackage):
     )
     conflicts(
         "^cuda@13:",
-        when="@:2",
-        msg="CUDA 13+ requires @main (makefile13 not in releases)",
+        when="@:2.2",
+        msg="CUDA 13+ requires @2.3: (makefile13 not in older releases)",
     )
+    # LibSrc/Lib ships prebuilt x86-64 static libraries
+    conflicts("target=aarch64:", msg="AreTomo3 links prebuilt x86-64 libraries")
 
     @property
     def _makefile_name(self):
-        """Select makefile based on CUDA version."""
+        """Select makefile based on version and CUDA version.
+
+        Tagged releases only ship makefile11. From 2.3 on, makefile11 is stale
+        (it omits sources that are needed), so use makefile12 or makefile13.
+        """
+        if self.spec.satisfies("@:2.2"):
+            return "makefile11"
         if self.spec.satisfies("^cuda@13:"):
             return "makefile13"
-        return "makefile11"
+        return "makefile12"
 
     def setup_build_environment(self, env):
         tiff = self.spec["libtiff"]
@@ -69,6 +83,11 @@ class Aretomo3(MakefilePackage, CudaPackage):
         cuda_gencode = " ".join(self.cuda_flags(cuda_arch))
         stubs = cuda.prefix.lib64.stubs
         makefile = FileFilter(self._makefile_name)
+
+        # makefile12 at 2.3.3 still lists this source, deleted in that version.
+        # Only the path is removed so the line continuation stays intact.
+        if spec.satisfies("@2.3.3:"):
+            makefile.filter(r"\./AreTomo/PatchAlign/GRandom2D\.cu", "")
 
         # Set CUDA paths
         makefile.filter(r"^CUDAHOME = .*", f"CUDAHOME = {cuda.prefix}")
@@ -101,9 +120,6 @@ class Aretomo3(MakefilePackage, CudaPackage):
             r"-L\$\(CUDALIB\)/stubs",
             f"-L{stubs}",
         )
-
-        # Fix hardcoded g++ in link line
-        makefile.filter(r"@g\+\+ ", "@c++ ")
 
         # Add libtiff link flags
         makefile.filter(
