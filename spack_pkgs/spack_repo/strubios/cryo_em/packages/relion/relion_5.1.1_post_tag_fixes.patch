@@ -1,0 +1,120 @@
+RELION 5.1.1 post-tag fixes from github.com/3dem/relion, 5.1.1 to afdd8167, without README.md.
+Code commits included:
+  7aa7d206 set version to 5.1.1
+  05cd1ad9 repaired nasty bug in writing ispg=1 for single 2D mrc files
+  afdd418b use consistent tomogram centre in setProjectionMatrix
+  2bba98f0 fix visiblity determination for subtomo particle reconstruction
+  5a450ba2 Clear deferred-free state when the custom GPU allocator frees a block (#1375)
+  afdd8167 ensures correct allocation sizes via integer math (#1377)
+
+diff --git a/src/acc/cuda/custom_allocator.cuh b/src/acc/cuda/custom_allocator.cuh
+index eb890d3209917c92441f5a034c6d1c310f3c6554..5c0bf8ecb0fe04dd726e4e61e8ee0fb55f2063d1 100644
+--- a/src/acc/cuda/custom_allocator.cuh
++++ b/src/acc/cuda/custom_allocator.cuh
+@@ -364,6 +364,15 @@ private:
+ 
+ 		a->free = true;
+ 
++		// Clear any deferred-free state: alloc() may hand this record out again as an exact fit,
++		// and a stale freeWhenReady/readyEvent would make _freeReadyAllocs() free it under its new owner.
++		if (a->readyEvent != 0)
++		{
++			DEBUG_HANDLE_ERROR(cudaEventDestroy(a->readyEvent));
++			a->readyEvent = 0;
++		}
++		a->freeWhenReady = false;
++
+ 		if (cache)
+ 		{
+ 			//Previous neighbor is free, concatenate
+@@ -500,7 +509,7 @@ public:
+ 
+ 		if (cache)
+ 		{
+-			size = alignmentSize*ceilf( (float)size / (float)alignmentSize) ; //To prevent miss-aligned memory
++			size = ((size + alignmentSize - 1) / alignmentSize) * alignmentSize; //To prevent miss-aligned memory (integer arithmetic: float rounding returned undersized allocations above 16 MB)
+ 
+ 			Alloc *curAlloc = _getFirstSuitedFree(size);
+ 
+diff --git a/src/acc/hip/custom_allocator.h b/src/acc/hip/custom_allocator.h
+index 36f7fc2c455b0e6f3945c076303889bd9153bfe1..b8dee64f593ecb8e2356b6ab57275abf09fae93e 100644
+--- a/src/acc/hip/custom_allocator.h
++++ b/src/acc/hip/custom_allocator.h
+@@ -366,6 +366,15 @@ private:
+ 
+ 		a->free = true;
+ 
++		// Clear any deferred-free state: alloc() may hand this record out again as an exact fit,
++		// and a stale freeWhenReady/readyEvent would make _freeReadyAllocs() free it under its new owner.
++		if (a->readyEvent != 0)
++		{
++			DEBUG_HANDLE_ERROR(hipEventDestroy(a->readyEvent));
++			a->readyEvent = 0;
++		}
++		a->freeWhenReady = false;
++
+ 		if (cache)
+ 		{
+ 			//Previous neighbor is free, concatenate
+@@ -502,7 +511,7 @@ public:
+ 
+ 		if (cache)
+ 		{
+-			size = alignmentSize*ceilf( (float)size / (float)alignmentSize) ; //To prevent miss-aligned memory
++			size = ((size + alignmentSize - 1) / alignmentSize) * alignmentSize; //To prevent miss-aligned memory (integer arithmetic: float rounding returned undersized allocations above 16 MB)
+ 
+ 			Alloc *curAlloc = _getFirstSuitedFree(size);
+ 
+diff --git a/src/jaz/tomography/programs/reconstruct_particle.cpp b/src/jaz/tomography/programs/reconstruct_particle.cpp
+index 04b4e85da211c1c5b988c1b64c9b5c6b583a6608..2277ed2dea834e70ab47f5a8130313747731be5f 100644
+--- a/src/jaz/tomography/programs/reconstruct_particle.cpp
++++ b/src/jaz/tomography/programs/reconstruct_particle.cpp
+@@ -343,7 +343,7 @@ void ReconstructParticleProgram::processTomograms(
+ 						part_id, fc, tomogram.centre, tomogram.optics.pixelSize);
+ 			std::vector<d4Matrix> projCut(fc), projPart(fc);
+ 
+-			const std::vector<bool> isVisible = tomogram.determineVisiblity(traj, s/2.0);
++			const std::vector<bool> isVisible = tomogram.determineVisiblity(traj, binning * s / 2.0);
+ 
+ 			const bool circle_crop = do_circle_crop;
+ 
+diff --git a/src/jaz/tomography/tomogram.cpp b/src/jaz/tomography/tomogram.cpp
+index 06e4ccbea9191d89f78577c911cfd313b663815f..8b95a2f6e617f336cee2ea8a34086db54d0ba9aa 100644
+--- a/src/jaz/tomography/tomogram.cpp
++++ b/src/jaz/tomography/tomogram.cpp
+@@ -41,7 +41,7 @@ void Tomogram::setProjectionMatrix(int f, RFLOAT xtilt, RFLOAT ytilt, RFLOAT zro
+     d4Matrix s0, s1, s2, r0, r1, r2;
+ 
+     // Get specimen center
+-    t3Vector<double> specimen_center((double)int(w0/2), (double)int(h0/2), (double)int(d0/2) );
++    t3Vector<double> specimen_center(centre.x, centre.y, centre.z);
+     s0 = s0.translation(-specimen_center);
+ 
+     // Get specimen shifts (in pixels)
+diff --git a/src/macros.h b/src/macros.h
+index 6afeeb5aed96a45e141ca5a06fa54eb3e12b8624..71e90591d34764df181d1b35193205f0f839ad13 100644
+--- a/src/macros.h
++++ b/src/macros.h
+@@ -45,7 +45,7 @@
+ #ifndef MACROS_H
+ #define MACROS_H
+ 
+-#define RELION_SHORT_VERSION "5.1.0"
++#define RELION_SHORT_VERSION "5.1.1"
+ extern const char *g_RELION_VERSION;
+ 
+ #include <math.h>
+diff --git a/src/rwMRC.h b/src/rwMRC.h
+index 0355091e6802124506276d72d9fe30f4134c7cab..840a51eb048d3de45b1fdd224b5943353248133f 100644
+--- a/src/rwMRC.h
++++ b/src/rwMRC.h
+@@ -337,7 +337,8 @@ int writeMRC(long int img_select, bool isStack=false, const int mode=WRITE_OVERW
+ 	else
+ 	{
+             header->nz = Zdim;
+-            header->ispg = 1;
++            // MRC2014: ISPG=0 for a single 2D image (or image stack), 1 for a single 3D volume
++            header->ispg = (Zdim > 1) ? 1 : 0;
+         }
+ 
+ 	// Convert T to datatype
