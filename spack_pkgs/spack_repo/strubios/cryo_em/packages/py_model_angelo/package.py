@@ -13,15 +13,28 @@ class PyModelAngelo(PythonPackage, CudaPackage):
 
     homepage = "https://github.com/3dem/model-angelo"
     git = "https://github.com/3dem/model-angelo.git"
+    url = "https://github.com/3dem/model-angelo/archive/refs/tags/v1.0.18.tar.gz"
 
     license("MIT", checked_by="snehring")
 
-    version("main", branch="main", preferred=True)
+    version("main", branch="main")
+    version(
+        "1.0.18",
+        sha256="94f2463df97dbd4911fc77fd09c3c35dfd06e0a28c0e99bf73c5697541fe9fe2",
+        preferred=True,
+    )
 
     variant(
         "weights",
         default=True,
-        description="Download model weights (nucleotides + nucleotides_no_seq) at install time",
+        description="Download all model weight bundles at install time",
+    )
+
+    conflicts(
+        "cuda_arch=none",
+        when="+cuda",
+        msg="Must specify CUDA compute capabilities of your GPU, see "
+        "https://developer.nvidia.com/cuda-gpus",
     )
 
     depends_on("py-setuptools", type="build")
@@ -36,7 +49,6 @@ class PyModelAngelo(PythonPackage, CudaPackage):
         )
     depends_on("py-torch@2:~cuda", when="~cuda", type=("build", "run"))
 
-    depends_on("py-torchvision", type=("build", "run"))
     depends_on("py-tqdm", type=("build", "run"))
     depends_on("py-scipy", type=("build", "run"))
     depends_on("py-biopython@1.81:", type=("build", "run"))
@@ -48,9 +60,12 @@ class PyModelAngelo(PythonPackage, CudaPackage):
     depends_on("py-pyhmmer@0.7.1", type=("build", "run"))
     depends_on("py-loguru", type=("build", "run"))
     depends_on("py-numpy@:1", type=("build", "run"))
+    depends_on("py-psutil", type=("build", "run"))
+    depends_on("py-wget", type=("build", "run"))
 
     def setup_run_environment(self, env):
-        env.set("TORCH_HOME", str(self.prefix.share.model_angelo))
+        if self.spec.satisfies("+weights"):
+            env.set("TORCH_HOME", str(self.prefix.share.model_angelo))
 
     @run_after("install")
     def download_weights(self):
@@ -67,5 +82,11 @@ class PyModelAngelo(PythonPackage, CudaPackage):
         )
 
         model_angelo = Executable(join_path(self.prefix.bin, "model_angelo"))
-        model_angelo("setup_weights", "--bundle-name", "nucleotides")
-        model_angelo("setup_weights", "--bundle-name", "nucleotides_no_seq")
+        for bundle in (
+            "nucleotides",
+            "nucleotides_no_seq",
+            "original",
+            "original_no_seq",
+            "small_gpu",
+        ):
+            model_angelo("setup_weights", "--bundle-name", bundle)
