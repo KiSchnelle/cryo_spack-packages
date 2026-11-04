@@ -222,6 +222,13 @@ class Relion(CMakePackage, CudaPackage):
         if digest.hexdigest() != ESM_SHA256:
             raise InstallError(f"{ESM}.pt has the wrong sha256")
 
+    def _remove_partial_downloads(self):
+        # A killed Python never runs torch.hub's cleanup, and _check_weights rejects these.
+        for root, _, files in os.walk(join_path(self._torch_home, "hub", "checkpoints")):
+            for f in files:
+                if f.endswith(".partial"):
+                    os.remove(join_path(root, f))
+
     @run_after("install")
     def fetch_weights(self):
         self._check_wrappers()
@@ -246,14 +253,18 @@ class Relion(CMakePackage, CudaPackage):
             ("relion_python_modelangelo", "setup_weights", "--bundle-name", "nucleotides"),
             ("relion_python_modelangelo", "setup_weights", "--bundle-name", "nucleotides_no_seq"),
         ]
+        # Executable's timeout would kill only the bash wrapper and orphan its Python child.
+        # coreutils timeout signals the whole process group and exits non-zero.
+        timeout = which("timeout", required=True)
         for tool, *args in steps:
-            wrapper = Executable(join_path(self.prefix.bin, tool))
+            wrapper = join_path(self.prefix.bin, tool)
             for attempt in range(3):
                 try:
-                    wrapper(*args, extra_env=env, timeout=FETCH_TIMEOUT)
+                    timeout("--kill-after=60", str(FETCH_TIMEOUT), wrapper, *args, extra_env=env)
                     break
                 except ProcessError:
                     if attempt == 2:
                         raise
                     time.sleep(60)
+                    self._remove_partial_downloads()
         self._check_weights()
