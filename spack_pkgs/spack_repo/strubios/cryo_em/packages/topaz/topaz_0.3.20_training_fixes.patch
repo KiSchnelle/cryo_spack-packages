@@ -1,0 +1,98 @@
+Training fixes for topaz-em 0.3.20, from tbepler/topaz master (no release yet):
+  c82fec95 Worked init fxn for dataset and images
+  9029e08f Correct num pixels given radius in 2D case (stats.py only)
+  fc28858b Fix KDTree query order to distance,idx
+  67cecc23 Added missing worker init fn call
+Without these, --num-workers > 0 repeats batches (upstream issue #260),
+negative crops can land on particles, and --num-particles gives a pi too large
+by a factor of 2*radius+1 in 2D.
+
+--- a/topaz/stats.py	2026-05-11 20:34:39
++++ b/topaz/stats.py	2026-11-04 15:34:26
+@@ -16,13 +16,16 @@
+ 
+ def pixels_given_radius(radius, dims=2):
+     '''Given a radius, calculate the number of pixels in a particle.'''
+-    grid = np.linspace(-radius, radius, 2*radius+1)
+-    xx,yy,zz = np.meshgrid(grid, grid, grid)
+-    d2 = xx**2 + yy**2
++    filter_range = torch.arange(start=-radius, end=radius+1)
++    grid = torch.meshgrid([filter_range]*dims, indexing='xy')
++    xgrid, ygrid = grid[0], grid[1]
++    d2 = xgrid**2 + ygrid**2
+     if dims == 3:
+-        d2 += zz**2
+-    mask = (d2 <= radius**2).astype(int)
+-    return mask.sum()
++        zgrid = grid[2]
++        d2 += zgrid**2
++    mask = (d2 <= radius**2).int()
++    mask_size = mask.sum().item()
++    return mask_size
+ 
+ 
+ def calculate_pi(expected_num_particles, radius, total_pixels, dims=2):
+--- a/topaz/training.py	2026-05-11 20:34:39
++++ b/topaz/training.py	2026-11-04 15:34:26
+@@ -486,6 +486,12 @@
+         return expanded[['image_name', 'x_coord', 'y_coord']], mask_size
+ 
+ 
++def worker_init_fn(worker_id):
++    worker_info = torch.utils.data.get_worker_info()
++    seed = worker_info.seed % 2**32
++    torch.manual_seed(seed) # seed torch RNG for augmentation
++    worker_info.dataset._set_all_rng_seeds(seed) # first seeds the dataset, then each image's rng
++
+ def make_data_iterators(train_image_path:str, train_targets_path:str, crop:int, split:Literal['pn','pu'], minibatch_size:int, epoch_size:int, 
+                         test_image_path:str=None, test_targets_path:str=None, testing_batch_size:int=1, num_workers:int=0, balance:float=0.5, 
+                         dims:int=2, use_cuda:bool=False, radius:int=3, preload:bool=True) -> Tuple[DataLoader, DataLoader]:
+@@ -500,7 +506,7 @@
+     expanded_train_targets, mask_size = expand_target_points(train_targets, radius, dims)
+     train_dataset = MultipleImageSetDataset(train_image_paths, expanded_train_targets, epoch_size*minibatch_size, crop, positive_balance=balance, split=split, 
+                                             rotate=True, flip=True, mode='training', dims=dims, radius=radius, mask_size=mask_size, preload=preload)
+-    train_dataloader = DataLoader(train_dataset, batch_size=minibatch_size, shuffle=True, num_workers=num_workers)
++    train_dataloader = DataLoader(train_dataset, batch_size=minibatch_size, shuffle=True, num_workers=num_workers, worker_init_fn=worker_init_fn)
+     report(f'Loaded {train_dataset.num_images} training micrographs with ~{int(train_dataset.num_pixels//mask_size)} labeled particles')
+ 
+     if test_targets_path is not None:
+--- a/topaz/utils/data/memory_mapped_data.py	2026-05-11 20:34:39
++++ b/topaz/utils/data/memory_mapped_data.py	2026-11-04 15:34:26
+@@ -83,10 +83,10 @@
+             y = self.rng.choice(self.shape[-2])
+             if self.dims == 3:
+                 z = self.rng.choice(self.shape[-3])
+-                idx, dist = self.positive_tree.query([[z, y, x]])
++                dist, idx = self.positive_tree.query([[z, y, x]])
+             else:
+                 z = None
+-                idx, dist = self.positive_tree.query([[y, x]])
++                dist, idx = self.positive_tree.query([[y, x]])
+             if dist > 0:
+                 return z, y, x
+ 
+@@ -236,6 +236,15 @@
+             missing = unseen_targets.image_name.unique().tolist()
+             report(f'WARNING: {len(missing)} micrographs listed in the coordinates file are missing from the {mode} images. Image names are listed below.')
+             report(f'WARNING: missing micrographs are: {missing}')
++     
++    def _set_all_rng_seeds(self, seed):
++        '''First set the seed for the dataset using the given seed.
++        Then seed each image's rng by sampling the dataset rng.'''
++        self.rng = np.random.default_rng(seed)
++        for group in self.images:
++            for image in group:
++                image_seed = self.rng.integers(0, 2**32 - 1, size=1).item()
++                image.rng = np.random.default_rng(image_seed)
+             
+     def __len__(self):
+         return self.number_samples # how many crops we want in each epoch
+@@ -246,7 +255,7 @@
+         # sample an image from the set
+         if self.rng.random() < self.positive_balance:
+             # sample a positive coordinate
+-            target = self.targets.sample()
++            target = self.targets.sample(random_state=self.rng)
+             name = target['image_name'].item()
+             # get the image with a matching name
+             img = self.name_dict[name]
