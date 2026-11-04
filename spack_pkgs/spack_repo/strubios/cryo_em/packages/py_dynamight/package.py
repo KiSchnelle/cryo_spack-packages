@@ -38,13 +38,15 @@ class PyDynamight(PythonPackage, CudaPackage):
 
     # CUDA-aware deps — propagate cuda_arch
     for _arch in CudaPackage.cuda_arch_values:
+        # torch up to 2.13 otherwise forces py-protobuf@3.13 and py-tensorboard@2.11,
+        # and every DynaMight command imports tensorboard.
         depends_on(
-            f"py-torch@1.13:+cuda cuda_arch={_arch}",
+            f"py-torch@1.13:+cuda+custom-protobuf cuda_arch={_arch}",
             when=f"+cuda cuda_arch={_arch}",
             type=("build", "run"),
         )
         depends_on(
-            f"tsne-cuda+cuda+python cuda_arch={_arch}",
+            f"tsne-cuda@3.0.1+cuda+python cuda_arch={_arch}",
             when=f"+cuda cuda_arch={_arch}",
             type=("build", "run"),
         )
@@ -57,7 +59,7 @@ class PyDynamight(PythonPackage, CudaPackage):
     depends_on("py-scikit-learn", type=("build", "run"))
     depends_on("py-umap-learn", type=("build", "run"))
     depends_on("py-matplotlib", type=("build", "run"))
-    depends_on("py-napari", type=("build", "run"))
+    depends_on("py-napari@0.4.18:0.5", type=("build", "run"))
     depends_on("py-tqdm", type=("build", "run"))
     depends_on("py-tensorboard", type=("build", "run"))
     depends_on("py-pyqt5", type=("build", "run"))

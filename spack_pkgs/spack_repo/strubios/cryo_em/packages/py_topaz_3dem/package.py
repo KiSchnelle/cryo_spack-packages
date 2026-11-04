@@ -17,9 +17,23 @@ class PyTopaz3dem(PythonPackage, CudaPackage):
 
     license("GPL-3.0-or-later")
 
-    version("master", branch="master", preferred=True)
+    version("master", branch="master")
+    version(
+        "2026.01.08",
+        commit="c8dd487cbf9d27139d0d430068033fb90dd9a393",
+        preferred=True,
+    )
 
-    depends_on("py-setuptools", type="build")
+    variant("cuda", default=True, description="Use CUDA")
+    conflicts("~cuda", msg="This site builds GPU versions only")
+    conflicts(
+        "cuda_arch=none",
+        when="+cuda",
+        msg="Must specify cuda_arch, see https://developer.nvidia.com/cuda-gpus",
+    )
+
+    # RELION's default picking path needs pkg_resources, which setuptools 82 removed.
+    depends_on("py-setuptools@:81", type=("build", "run"))
     depends_on("python@3.8:", type=("build", "run"))
 
     # CUDA-aware deps — propagate cuda_arch
@@ -29,7 +43,6 @@ class PyTopaz3dem(PythonPackage, CudaPackage):
             when=f"+cuda cuda_arch={_arch}",
             type=("build", "run"),
         )
-    depends_on("py-torch@2.0.1:~cuda", when="~cuda", type=("build", "run"))
 
     depends_on("py-numpy@1.11:", type=("build", "run"))
     depends_on("py-pandas", type=("build", "run"))
@@ -37,3 +50,17 @@ class PyTopaz3dem(PythonPackage, CudaPackage):
     depends_on("py-scipy@0.17.0:", type=("build", "run"))
     depends_on("py-pillow@6.2.0:", type=("build", "run"))
     depends_on("py-future", type=("build", "run"))
+
+    def patch(self):
+        filter_file(
+            r"torch\.load\((name|path|args\.model)\)",
+            r"torch.load(\1, weights_only=False)",
+            "topaz/denoise.py",
+            "topaz/commands/denoise3d.py",
+            "topaz/commands/train.py",
+        )
+        filter_file(
+            r"pd\.concat\((groups_train|groups_test), 0\)",
+            r"pd.concat(\1, axis=0)",
+            "topaz/commands/train_test_split.py",
+        )

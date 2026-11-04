@@ -18,7 +18,20 @@ class PyRelionClassranker(PythonPackage, CudaPackage):
 
     license("GPL-3.0-only", checked_by="snehring")
 
-    version("main", branch="main", preferred=True)
+    version("main", branch="main")
+    version(
+        "2025.09.16",
+        commit="352adf8b690ba56e9f4073cfee41c8fcad3dfb81",
+        preferred=True,
+    )
+
+    variant("cuda", default=True, description="Use CUDA")
+    conflicts("~cuda", msg="This site builds GPU versions only")
+    conflicts(
+        "cuda_arch=none",
+        when="+cuda",
+        msg="Must specify cuda_arch, see https://developer.nvidia.com/cuda-gpus",
+    )
 
     depends_on("py-setuptools", type="build")
     depends_on("python@3.5:", type=("build", "run"))
@@ -30,7 +43,5 @@ class PyRelionClassranker(PythonPackage, CudaPackage):
             when=f"+cuda cuda_arch={_arch}",
             type=("build", "run"),
         )
-    depends_on("py-torch@2.0.1:~cuda", when="~cuda", type=("build", "run"))
 
-    depends_on("py-torchvision@0.15.2:", type=("build", "run"))
     depends_on("py-numpy@1.24.4:", type=("build", "run"))
