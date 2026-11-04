@@ -20,11 +20,15 @@ class Aretomo2(MakefilePackage, CudaPackage):
 
     license("BSD-3-Clause", checked_by="Markus92")
 
-    version("main", branch="main", preferred=True)
+    version("main", branch="main")
+    # Upstream never tagged 1.1.3. It has the tilt-offset fix for RELION's -TiltCor path.
+    version("1.1.3", commit="01e7219c7963d53a89ff5387c811c704e1be2d44", preferred=True)
     version(
         "1.1.2",
         sha256="4cbb4d25d28778041d80ef2c598519b17b9a40aa84e1e99daf48ad5a90d946b4",
     )
+
+    variant("cuda", default=True, description="Use CUDA")
 
     depends_on("c", type="build")  # Not really, but CUDA does
     depends_on("cxx", type="build")
@@ -82,3 +86,5 @@ class Aretomo2(MakefilePackage, CudaPackage):
     def install(self, spec, prefix):
         mkdir(prefix.bin)
         install("AreTomo2", prefix.bin)
+        # lil_aretomo, used by relion_python_tomo_align_tilt_series, looks for "AreTomo".
+        symlink(join_path(prefix.bin, "AreTomo2"), join_path(prefix.bin, "AreTomo"))
