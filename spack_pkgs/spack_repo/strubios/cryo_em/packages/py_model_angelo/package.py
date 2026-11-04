@@ -24,10 +24,14 @@ class PyModelAngelo(PythonPackage, CudaPackage):
         preferred=True,
     )
 
+    variant("cuda", default=True, description="Use CUDA")
+    conflicts("~cuda", msg="This site builds GPU versions only")
+
     variant(
         "weights",
         default=True,
-        description="Download all model weight bundles at install time",
+        description="Install the nucleotides bundles and ESM-1b (12.1 GB) in the prefix; "
+        "py-relion uses ~weights",
     )
 
     conflicts(
@@ -38,7 +42,7 @@ class PyModelAngelo(PythonPackage, CudaPackage):
     )
 
     depends_on("py-setuptools", type="build")
-    depends_on("python@3.11:", type=("build", "run"))
+    depends_on("python@3.11", type=("build", "run"))
 
     # CUDA-aware deps — propagate cuda_arch
     for _arch in CudaPackage.cuda_arch_values:
@@ -47,7 +51,6 @@ class PyModelAngelo(PythonPackage, CudaPackage):
             when=f"+cuda cuda_arch={_arch}",
             type=("build", "run"),
         )
-    depends_on("py-torch@2:~cuda", when="~cuda", type=("build", "run"))
 
     depends_on("py-tqdm", type=("build", "run"))
     depends_on("py-scipy", type=("build", "run"))
@@ -67,26 +70,27 @@ class PyModelAngelo(PythonPackage, CudaPackage):
         if self.spec.satisfies("+weights"):
             env.set("TORCH_HOME", str(self.prefix.share.model_angelo))
 
-    @run_after("install")
+    @run_after("install", when="+weights")
     def download_weights(self):
-        if not self.spec.satisfies("+weights"):
-            return
-
-        torch_home = self.prefix.share.model_angelo
+        torch_home = str(self.prefix.share.model_angelo)
         mkdirp(torch_home)
-        os.environ["TORCH_HOME"] = str(torch_home)
-
-        site_pkgs = join_path(self.prefix, self.spec["python"].package.platlib)
-        os.environ["PYTHONPATH"] = (
-            site_pkgs + os.pathsep + os.environ.get("PYTHONPATH", "")
-        )
-
+        site_pkgs = join_path(self.prefix, self.spec["python"].package.purelib)
+        env = {
+            "TORCH_HOME": torch_home,
+            "PYTHONPATH": site_pkgs + os.pathsep + os.environ.get("PYTHONPATH", ""),
+        }
         model_angelo = Executable(join_path(self.prefix.bin, "model_angelo"))
-        for bundle in (
-            "nucleotides",
-            "nucleotides_no_seq",
-            "original",
-            "original_no_seq",
-            "small_gpu",
+        # v1.0.18 has model definitions only for the two nucleotides bundles
+        for bundle in ("nucleotides", "nucleotides_no_seq"):
+            model_angelo("setup_weights", "--bundle-name", bundle, extra_env=env, timeout=4 * 3600)
+        # main() turns any TypeError into a help message and exit status 0
+        ckpt = join_path(torch_home, "hub", "checkpoints")
+        for name, size in (
+            ("model_angelo_v1.0/nucleotides/success.txt", None),
+            ("model_angelo_v1.0/nucleotides_no_seq/success.txt", None),
+            ("esm1b_t33_650M_UR50S.pt", 7828576466),
+            ("esm1b_t33_650M_UR50S-contact-regression.pt", 3174),
         ):
-            model_angelo("setup_weights", "--bundle-name", bundle)
+            path = join_path(ckpt, name)
+            if not os.path.isfile(path) or (size and os.path.getsize(path) != size):
+                raise InstallError(f"Missing or bad ModelAngelo weight: {name}")
