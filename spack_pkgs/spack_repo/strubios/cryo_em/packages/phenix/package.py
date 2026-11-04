@@ -1,42 +1,64 @@
-import os
-
 from spack.package import *
 from spack_repo.builtin.build_systems.generic import Package
 
+# Installers are downloaded manually and kept on site.
+_DOWNLOADS = "file:///sbdata/software/download"
+
 
 class Phenix(Package):
-    """Phenix: Python-based Hierarchical Environment for Integrated Xtallography"""
+    """Phenix: Python-based Hierarchical Environment for Integrated Xtallography.
+
+    Installs the prebuilt binary distribution. For 2.x this is the CUDA 12 installer."""
 
     homepage = "https://phenix-online.org/"
-    # Point this URL to your downloaded file
-    url = "file:////sbdata/software/download/phenix-installer-1.21.2-5419-intel-linux-2.6-x86_64-centos6.tar"
 
     version(
-        "1.20.1-5419",
+        "2.2.1-6174",
+        url=f"{_DOWNLOADS}/Phenix-2.2.1-6174-CUDA12-Linux-x86_64.sh",
+        sha256="5afdc9b7c56f6b1d76ba011e58c1e4c0b3dac8a76b965da3dd30f0ad472d9ade",
+        expand=False,
+    )
+    version(
+        "1.21.2-5419",
+        url=f"{_DOWNLOADS}/phenix-installer-1.21.2-5419-intel-linux-2.6-x86_64-centos6.tar",
         sha256="9fd612dd2b318b7723144845ac92aef3b7b23f7664c41a062995e4833328d150",
     )
 
+    requires("platform=linux", msg="Only the Linux installers are packaged")
+    conflicts("target=aarch64:", msg="Phenix installers are x86_64 binaries")
+
+    @property
+    def _phenix_dir(self):
+        return join_path(self.prefix, f"phenix-{self.version}")
+
+    @property
+    def sanity_check_is_file(self):
+        return [join_path(f"phenix-{self.version}", "phenix_env.sh")]
+
     def install(self, spec, prefix):
-        installer_dir = self.stage.source_path
+        if spec.satisfies("@2:"):
+            self._install_conda_style()
+        else:
+            self._install_legacy(prefix)
 
-        with working_dir(installer_dir):
-            # Make sure the install script is executable
-            install_sh = os.path.join(installer_dir, "install")
-            chmod = which("chmod")
-            chmod("+x", install_sh)
+    def _install_conda_style(self):
+        # The installer runs files it extracts to TMPDIR, so that must not be noexec,
+        # and the docs ask for ~25 GB of temporary space. Use the stage instead of /tmp.
+        with set_env(TMPDIR=self.stage.path):
+            # The docs require the phenix-<version> subdirectory below the prefix.
+            bash = which("bash", required=True)
+            bash(self.stage.archive_file, "-b", "-p", self._phenix_dir)
 
-            # Run the install script with --prefix=$prefix
-            Executable(install_sh)("--prefix={0}".format(prefix))
+    def _install_legacy(self, prefix):
+        # Creates $prefix/phenix-<version>
+        with working_dir(self.stage.source_path):
+            set_executable("install")
+            Executable("./install")(f"--prefix={prefix}")
 
     def setup_run_environment(self, env):
-        # Phenix puts everything into a subdirectory, e.g. $prefix/phenix-1.20.1-4860
-        # Find that directory
-        subdirs = [d for d in os.listdir(self.prefix) if d.startswith("phenix")]
-        if not subdirs:
-            raise InstallError("Could not find phenix subdirectory in prefix.")
-        phenix_dir = os.path.join(self.prefix, subdirs[0])
-
-        # source the environment file for full setup
-        env_file = os.path.join(phenix_dir, "phenix_env.sh")
-        if os.path.isfile(env_file):
-            env.set("PHENIX_ENV_FILE", env_file)
+        # phenix_env.sh sets PHENIX, PHENIX_PREFIX, PHENIX_VERSION and PATH.
+        env.extend(
+            EnvironmentModifications.from_sourcing_file(
+                join_path(self._phenix_dir, "phenix_env.sh")
+            )
+        )
