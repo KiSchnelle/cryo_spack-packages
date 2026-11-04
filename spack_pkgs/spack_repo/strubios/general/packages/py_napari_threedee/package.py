@@ -40,11 +40,12 @@ class PyNapariThreedee(PythonPackage):
         "^py-imageio@2.22.1",
         msg="py-imageio 2.22.1 is incompatible with py-napari-threedee",
     )
-    depends_on("py-libigl", type=("build", "run"))
+    # py-libigl removed: the import is guarded, RELION never reaches it, and 2.6.2 has no
+    # top-level ambient_occlusion. The only known loss is the ambient-occlusion widget.
     depends_on("py-magicgui", type=("build", "run"))
-    depends_on("py-morphosamplers", type=("build", "run"))
+    depends_on("py-morphosamplers@0.0.13", type=("build", "run"))
     depends_on("py-mrcfile", type=("build", "run"))
-    depends_on("py-napari@:4", type=("build", "run"))
+    depends_on("py-napari@:0.4", type=("build", "run"))
     depends_on("py-numpy", type=("build", "run"))
     depends_on("py-pandas", type=("build", "run"))
     depends_on("py-pooch", type=("build", "run"))
@@ -54,4 +55,4 @@ class PyNapariThreedee(PythonPackage):
     depends_on("py-scipy", type=("build", "run"))
     depends_on("py-superqt", type=("build", "run"))
     depends_on("py-vispy", type=("build", "run"))
-    depends_on("py-zarr", type=("build", "run"))
+    depends_on("py-zarr@:2", type=("build", "run"))
