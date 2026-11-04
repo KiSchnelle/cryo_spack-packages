@@ -15,7 +15,7 @@ class PyModelAngelo(PythonPackage, CudaPackage):
     git = "https://github.com/3dem/model-angelo.git"
     url = "https://github.com/3dem/model-angelo/archive/refs/tags/v1.0.18.tar.gz"
 
-    license("MIT", checked_by="snehring")
+    license("MIT")
 
     version("main", branch="main")
     version(

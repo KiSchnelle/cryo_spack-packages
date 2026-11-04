@@ -16,7 +16,7 @@ class PyRelionClassranker(PythonPackage, CudaPackage):
     homepage = "https://github.com/3dem/relion-classranker"
     git = "https://github.com/3dem/relion-classranker.git"
 
-    license("GPL-3.0-only", checked_by="snehring")
+    license("GPL-3.0-only")
 
     version("main", branch="main")
     version(

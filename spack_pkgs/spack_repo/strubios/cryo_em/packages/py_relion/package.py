@@ -19,7 +19,7 @@ class PyRelion(PythonPackage, CudaPackage):
     git = "https://github.com/3dem/relion.git"
     url = "https://github.com/3dem/relion/archive/5.1.1.zip"
 
-    license("GPL-2.0-only", checked_by="Markus92")
+    license("GPL-2.0-only")
 
     version("5.1.1", sha256="1bf75dcf287fb6d591cd4194c0d0cddf98590ae36c54fafbbcb7aa4daef85ec6")
     version("5.1.0", sha256="714649163fbd7ee63cf9331d97751bd2e972703482349d8d7f2110387ef556d2")

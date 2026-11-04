@@ -18,7 +18,7 @@ class PyUcsfPyem(PythonPackage):
     url = "https://github.com/asarnow/pyem/archive/refs/tags/v0.68.tar.gz"
     git = "https://github.com/asarnow/pyem.git"
 
-    license("GPL-3.0-only", checked_by="A-N-Other")
+    license("GPL-3.0-only")
 
     version("0.69", sha256="969e0075ea7ba854e6ab2c5cf9ab315c7dc994dcb738574707cd4aad380c1105")
     version("0.68", sha256="105c2fc9860dd927b051ceb90287cf5a4a2664ffa8ae0f95464263570ee733c5")

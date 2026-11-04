@@ -13,7 +13,6 @@ class PyPyfftw(PythonPackage):
     homepage = "https://pyfftw.readthedocs.io/en/latest/"
     pypi = "pyFFTW/pyfftw-0.14.0.tar.gz"
 
-    maintainers("paugier")
 
     license("BSD-3-Clause")
 

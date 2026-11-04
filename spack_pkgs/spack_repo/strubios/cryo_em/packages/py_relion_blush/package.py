@@ -13,7 +13,7 @@ class PyRelionBlush(PythonPackage, CudaPackage):
     homepage = "https://github.com/3dem/relion-blush"
     git = "https://github.com/3dem/relion-blush.git"
 
-    license("MIT", checked_by="github_user1")
+    license("MIT")
 
     version("main", branch="main")
     version(

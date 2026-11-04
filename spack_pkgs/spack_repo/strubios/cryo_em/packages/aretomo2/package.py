@@ -18,7 +18,7 @@ class Aretomo2(MakefilePackage, CudaPackage):
     )
     git = "https://github.com/czimaginginstitute/AreTomo2.git"
 
-    license("BSD-3-Clause", checked_by="Markus92")
+    license("BSD-3-Clause")
 
     version("main", branch="main")
     # Upstream never tagged 1.1.3. It has the tilt-offset fix for RELION's -TiltCor path.
