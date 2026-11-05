@@ -239,27 +239,32 @@ class Relion(CMakePackage, CudaPackage):
             "MPLBACKEND": "Agg",
             "MPLCONFIGDIR": scratch,
             "NUMBA_CACHE_DIR": scratch,
+            "TORCH_HOME": self._torch_home,
         }
+        classranker = ("-c", "from relion_classranker import main; exit(main())")
+        blush = ("-c", "from relion_blush import main; exit(main())")
+        modelangelo = ("-c", "from model_angelo.__main__ import main; exit(main())")
         steps = [
-            ("relion_python_classranker",),
-            ("relion_python_blush",),
-            ("relion_python_blush", "-m", "amy-v1.0"),
-            ("relion_python_blush", "-m", "amy-v1.0-lsd"),
+            classranker,
+            blush,
+            (*blush, "-m", "amy-v1.0"),
+            (*blush, "-m", "amy-v1.0-lsd"),
         ]
         if self.spec.satisfies("@5.1:"):
-            steps.append(("relion_python_trace_amyloids",))
+            steps.append((join_path(self.prefix.bin, "relion_trace_amyloids.py"),))
         steps += [
-            ("relion_python_modelangelo", "setup_weights", "--bundle-name", "nucleotides"),
-            ("relion_python_modelangelo", "setup_weights", "--bundle-name", "nucleotides_no_seq"),
+            (*modelangelo, "setup_weights", "--bundle-name", "nucleotides"),
+            (*modelangelo, "setup_weights", "--bundle-name", "nucleotides_no_seq"),
         ]
-        # Executable's timeout would kill only the bash wrapper and orphan its Python child.
-        # coreutils timeout signals the whole process group and exits non-zero.
-        timeout = which("timeout", required=True)
-        for tool, *args in steps:
-            wrapper = join_path(self.prefix.bin, tool)
+        # Run what the wrappers run, without the bash parent: the timeout then kills the
+        # download itself. coreutils timeout must not be used here. It moves to its own process
+        # group, which Spack's SIGTERM misses while the build waits for its children, so an
+        # interrupted install would hang until the timeout.
+        python = self.spec["python"].command
+        for args in steps:
             for attempt in range(3):
                 try:
-                    timeout("--kill-after=60", str(FETCH_TIMEOUT), wrapper, *args, extra_env=env)
+                    python(*args, extra_env=env, timeout=FETCH_TIMEOUT)
                     break
                 except ProcessError:
                     if attempt == 2:
