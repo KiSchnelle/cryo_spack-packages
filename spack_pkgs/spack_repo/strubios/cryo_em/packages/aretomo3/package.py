@@ -95,10 +95,11 @@ class Aretomo3(MakefilePackage, CudaPackage):
         # Use Spack's compiler wrappers
         makefile.filter(r"^CC = g\+\+", "CC = c++")
 
-        # Use nvcc directly
+        # nvcc also does the final link, so its host compiler must be Spack's wrapper:
+        # the real compiler adds no RPATHs to cuda and libtiff.
         makefile.filter(
             r"^NVCC = \$\(CUDAHOME\)/bin/nvcc",
-            f"NVCC = {cuda.prefix}/bin/nvcc -ccbin {self.compiler.cxx}",
+            f"NVCC = {cuda.prefix}/bin/nvcc -ccbin {spack_cxx}",
         )
 
         # Replace CUFLAG gencode block
