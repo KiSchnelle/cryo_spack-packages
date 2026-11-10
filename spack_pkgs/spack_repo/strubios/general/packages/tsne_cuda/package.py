@@ -20,12 +20,16 @@ class TsneCuda(BuiltinTsneCuda):
 
     def setup_build_environment(self, env):
         env.prepend_path("LIBRARY_PATH", self.spec["cuda"].libs.directories[0])
+        # All targets are CUDA, so they are linked with CUDAHOSTCXX, which the cuda package
+        # sets to the real compiler. Spack's wrapper adds the RPATHs to cuda and MKL that
+        # CMake leaves out: both are on LIBRARY_PATH, so CMake treats them as implicit.
+        env.set("CUDAHOSTCXX", spack_cxx)
 
     def cmake_args(self):
         args = super().cmake_args()
         cuda_lib = self.spec["cuda"].libs.directories[0]
         args.append(self.define("CMAKE_BUILD_RPATH", cuda_lib))
-        args.append(self.define("CMAKE_INSTALL_RPATH", cuda_lib))
+        # Keep Spack's CMAKE_INSTALL_RPATH: bin/tsne finds libtsnecuda.so through it.
         return args
 
     @run_after("install", when="+python")
