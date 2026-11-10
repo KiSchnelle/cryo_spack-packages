@@ -39,3 +39,9 @@ class PyHealpy(PythonPackage):
     def patch(self):
         with open("setup.cfg", "a") as f:
             f.write(f"\n[build_clib]\nbuild_clib = {self.prefix.lib.healpy_vendored}\n")
+
+    def setup_build_environment(self, env):
+        # patch() installs the bundled healpix_cxx and libsharp below build_clib. RPATH every
+        # link there: the extensions and libhealpix_cxx, which needs libsharp. setuptools and
+        # the bundled configure scripts both read LDFLAGS.
+        env.append_flags("LDFLAGS", f"-Wl,-rpath,{self.prefix.lib.healpy_vendored.lib}")
