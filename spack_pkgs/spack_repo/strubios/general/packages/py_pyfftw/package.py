@@ -82,4 +82,8 @@ class PyPyfftw(PythonPackage):
 
     def setup_build_environment(self, env: EnvironmentModifications) -> None:
         env.prepend_path("CPATH", self.spec["fftw"].prefix.include)
-        env.prepend_path("LIBRARY_PATH", self.spec["fftw"].prefix.lib)
+        # setuptools appends LDFLAGS to the extension link line, so the RPATH to fftw
+        # does not depend on that link going through Spack's wrapper.
+        for libdir in self.spec["fftw"].libs.directories:
+            env.prepend_path("LIBRARY_PATH", libdir)
+            env.append_flags("LDFLAGS", f"-Wl,-rpath,{libdir}")
