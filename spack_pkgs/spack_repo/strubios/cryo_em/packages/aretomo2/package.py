@@ -1,9 +1,10 @@
 # Copyright Spack Project Developers. See COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
-from spack.package import *
 from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.makefile import MakefilePackage
+
+from spack.package import *
 
 
 class Aretomo2(MakefilePackage, CudaPackage):
@@ -13,9 +14,7 @@ class Aretomo2(MakefilePackage, CudaPackage):
     in a single package."""
 
     homepage = "https://github.com/czimaginginstitute/AreTomo2"
-    url = (
-        "https://github.com/czimaginginstitute/AreTomo2/archive/refs/tags/v1.1.2.tar.gz"
-    )
+    url = "https://github.com/czimaginginstitute/AreTomo2/archive/refs/tags/v1.1.2.tar.gz"
     git = "https://github.com/czimaginginstitute/AreTomo2.git"
 
     license("BSD-3-Clause")
@@ -36,9 +35,7 @@ class Aretomo2(MakefilePackage, CudaPackage):
     depends_on("cuda@11:12", type=("build", "link"))
 
     conflicts("~cuda")
-    conflicts(
-        "cuda_arch=none", when="+cuda", msg="A value for cuda_arch must be specified."
-    )
+    conflicts("cuda_arch=none", when="+cuda", msg="A value for cuda_arch must be specified.")
 
     @property
     def build_directory(self):

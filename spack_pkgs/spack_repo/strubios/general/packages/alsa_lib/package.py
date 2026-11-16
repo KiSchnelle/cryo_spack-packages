@@ -2,8 +2,9 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.packages.alsa_lib.package import AlsaLib as BuiltinAlsaLib
+
+from spack.package import *
 
 
 class AlsaLib(BuiltinAlsaLib):

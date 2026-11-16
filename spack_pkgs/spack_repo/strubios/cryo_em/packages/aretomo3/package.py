@@ -2,9 +2,10 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.makefile import MakefilePackage
+
+from spack.package import *
 
 
 class Aretomo3(MakefilePackage, CudaPackage):
@@ -14,9 +15,7 @@ class Aretomo3(MakefilePackage, CudaPackage):
     in a single application."""
 
     homepage = "https://github.com/czimaginginstitute/AreTomo3"
-    url = (
-        "https://github.com/czimaginginstitute/AreTomo3/archive/refs/tags/v2.2.2.tar.gz"
-    )
+    url = "https://github.com/czimaginginstitute/AreTomo3/archive/refs/tags/v2.2.2.tar.gz"
     git = "https://github.com/czimaginginstitute/AreTomo3.git"
 
     license("BSD-3-Clause")
@@ -43,9 +42,7 @@ class Aretomo3(MakefilePackage, CudaPackage):
     depends_on("libtiff", type=("build", "link"))
 
     conflicts("~cuda")
-    conflicts(
-        "cuda_arch=none", when="+cuda", msg="A value for cuda_arch must be specified."
-    )
+    conflicts("cuda_arch=none", when="+cuda", msg="A value for cuda_arch must be specified.")
     conflicts(
         "^cuda@13:",
         when="@:2.2",

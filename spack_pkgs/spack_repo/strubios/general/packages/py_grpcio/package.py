@@ -2,8 +2,9 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.packages.py_grpcio.package import PyGrpcio as BuiltinPyGrpcio
+
+from spack.package import *
 
 
 class PyGrpcio(BuiltinPyGrpcio):

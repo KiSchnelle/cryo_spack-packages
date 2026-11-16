@@ -2,9 +2,10 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.python import PythonPackage
+
+from spack.package import *
 
 
 class Topaz(PythonPackage, CudaPackage):
@@ -31,12 +32,15 @@ class Topaz(PythonPackage, CudaPackage):
     depends_on("py-setuptools@61:", type="build")
 
     for _arch in CudaPackage.cuda_arch_values:
-        depends_on(f"py-torch@1: +cuda cuda_arch={_arch}",
-                   when=f"+cuda cuda_arch={_arch}", type=("build", "run"))
+        depends_on(
+            f"py-torch@1: +cuda cuda_arch={_arch}",
+            when=f"+cuda cuda_arch={_arch}",
+            type=("build", "run"),
+        )
 
     with default_args(type=("build", "run")):
         depends_on("python@3.8:3.13.0")  # upstream requires-python <=3.13
-        depends_on("py-torchvision")     # imported at memory_mapped_data.py:6, sampler.py:14
+        depends_on("py-torchvision")  # imported at memory_mapped_data.py:6, sampler.py:14
         depends_on("py-numpy@1.11:")
         depends_on("py-pandas@0.20.3:")
         depends_on("py-scikit-learn@0.19.0:")

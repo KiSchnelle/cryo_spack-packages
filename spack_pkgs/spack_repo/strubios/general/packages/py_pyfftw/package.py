@@ -2,8 +2,9 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.build_systems.python import PythonPackage
+
+from spack.package import *
 
 
 class PyPyfftw(PythonPackage):
@@ -12,7 +13,6 @@ class PyPyfftw(PythonPackage):
 
     homepage = "https://pyfftw.readthedocs.io/en/latest/"
     pypi = "pyFFTW/pyfftw-0.14.0.tar.gz"
-
 
     license("BSD-3-Clause")
 

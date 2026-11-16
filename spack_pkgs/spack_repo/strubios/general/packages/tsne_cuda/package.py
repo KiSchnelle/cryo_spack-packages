@@ -2,9 +2,10 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.packages.tsne_cuda.package import TsneCuda as BuiltinTsneCuda
+
+from spack.package import *
 
 
 class TsneCuda(BuiltinTsneCuda):

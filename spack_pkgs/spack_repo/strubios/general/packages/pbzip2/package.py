@@ -2,8 +2,9 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.packages.pbzip2.package import Pbzip2 as BuiltinPbzip2
+
+from spack.package import *
 
 
 class Pbzip2(BuiltinPbzip2):

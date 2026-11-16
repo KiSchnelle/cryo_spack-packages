@@ -2,10 +2,11 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.packages.py_morphosamplers.package import (
     PyMorphosamplers as BuiltinPyMorphosamplers,
 )
+
+from spack.package import *
 
 
 class PyMorphosamplers(BuiltinPyMorphosamplers):

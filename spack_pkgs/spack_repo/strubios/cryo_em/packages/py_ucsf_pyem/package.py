@@ -2,8 +2,6 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-import glob
-import os
 
 from spack_repo.builtin.build_systems.python import PythonPackage
 

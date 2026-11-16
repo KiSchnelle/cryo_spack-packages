@@ -2,8 +2,9 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.packages.py_psygnal.package import PyPsygnal as BuiltinPyPsygnal
+
+from spack.package import *
 
 
 class PyPsygnal(BuiltinPyPsygnal):

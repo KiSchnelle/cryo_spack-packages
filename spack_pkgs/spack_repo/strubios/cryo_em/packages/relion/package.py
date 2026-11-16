@@ -6,9 +6,10 @@ import hashlib
 import os
 import time
 
-from spack.package import *
 from spack_repo.builtin.build_systems.cmake import CMakePackage
 from spack_repo.builtin.build_systems.cuda import CudaPackage
+
+from spack.package import *
 
 ESM = "esm1b_t33_650M_UR50S"
 ESM_SHA256 = "0569754efaff7dcb7e068c27367bc73f10afb4b450ea30aac30d9bc60783a8b1"
@@ -63,8 +64,11 @@ class Relion(CMakePackage, CudaPackage):
 
     variant("cuda", default=True, description="Build with CUDA")
     conflicts("~cuda", msg="This site builds GPU RELION only")
-    conflicts("cuda_arch=none", when="+cuda",
-              msg="Must specify cuda_arch, see https://developer.nvidia.com/cuda-gpus")
+    conflicts(
+        "cuda_arch=none",
+        when="+cuda",
+        msg="Must specify cuda_arch, see https://developer.nvidia.com/cuda-gpus",
+    )
 
     variant("gui", default=True, description="build the gui")
     variant("double", default=True, description="double precision (cpu) code")
@@ -108,8 +112,11 @@ class Relion(CMakePackage, CudaPackage):
     # The build edge must stay: the install-time weight fetch gets PYTHONPATH through it.
     for _v in ("5.0.1", "5.1.0", "5.1.1"):
         for _arch in CudaPackage.cuda_arch_values:
-            depends_on(f"py-relion@={_v} +cuda cuda_arch={_arch}",
-                       when=f"@={_v} +cuda cuda_arch={_arch}", type=("build", "run"))
+            depends_on(
+                f"py-relion@={_v} +cuda cuda_arch={_arch}",
+                when=f"@={_v} +cuda cuda_arch={_arch}",
+                type=("build", "run"),
+            )
 
     @property
     def _torch_home(self):
@@ -121,8 +128,12 @@ class Relion(CMakePackage, CudaPackage):
             filter_file("-D__INTEL_COMPILER ", "", "cmake/BuildTypes.cmake", string=True)
         if self.spec.satisfies("@5.1.0"):
             # 5.1.0's wrapper points at the deleted build stage; fixed upstream in 5.1.1
-            filter_file('"@Relion_BINARY_DIR@"', '"@CMAKE_INSTALL_PREFIX@"',
-                        "scripts/python_trace_amyloids.in", string=True)
+            filter_file(
+                '"@Relion_BINARY_DIR@"',
+                '"@CMAKE_INSTALL_PREFIX@"',
+                "scripts/python_trace_amyloids.in",
+                string=True,
+            )
         if self.spec.satisfies("@5.1:"):
             # torch.compile needs Triton on a GPU, and builtin py-torch does not depend on it.
             # PyPI wheels bring it, which is why upstream's conda environment works.

@@ -2,9 +2,10 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
 from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.python import PythonPackage
+
+from spack.package import *
 
 
 class PyRelion(PythonPackage, CudaPackage):
@@ -27,8 +28,11 @@ class PyRelion(PythonPackage, CudaPackage):
 
     variant("cuda", default=True, description="Build with CUDA")
     conflicts("~cuda", msg="This site builds GPU versions only")
-    conflicts("cuda_arch=none", when="+cuda",
-              msg="Must specify cuda_arch, see https://developer.nvidia.com/cuda-gpus")
+    conflicts(
+        "cuda_arch=none",
+        when="+cuda",
+        msg="Must specify cuda_arch, see https://developer.nvidia.com/cuda-gpus",
+    )
 
     # Deliberate deviations from upstream environment.yml: python 3.10 and setuptools 59.5.0
     # are not used, torch is newer than 2.7.1, scikit-learn is newer than 1.3.0.
@@ -78,10 +82,17 @@ class PyRelion(PythonPackage, CudaPackage):
 
         # relion pyproject.toml deps
         depends_on("py-pandas@2.1.1:2~performance")  # +performance would force numpy 1.25
-        depends_on("py-mdocfile@0.0.8")              # 0.1+ needs pydantic 2
+        depends_on("py-mdocfile@0.0.8")  # 0.1+ needs pydantic 2
         depends_on("py-yet-another-imod-wrapper@0.0.9:")
-        for _d in ("py-rich", "py-einops", "py-lil-aretomo", "py-makefun",
-                   "py-lru-dict", "py-superqt", "py-magicgui"):
+        for _d in (
+            "py-rich",
+            "py-einops",
+            "py-lil-aretomo",
+            "py-makefun",
+            "py-lru-dict",
+            "py-superqt",
+            "py-magicgui",
+        ):
             depends_on(_d)
 
     # Set version so setuptools won't complain about not being able to determine it

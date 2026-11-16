@@ -1,0 +1,54 @@
+# Tools for working on the recipes: the formatter and linter ruff, with the settings of
+# spack's own recipe repo (spack-packages), so that a recipe copied from there keeps its
+# layout. Only for the editor and the command line on a workstation. spack does not use
+# this file.
+#
+#   uv sync                 creates .venv with the tools
+#   uv run ruff format      formats the recipes
+#   uv run ruff check       checks them and applies the safe fixes
+[project]
+name = "cryo-spack-packages"
+version = "0"
+description = "spack recipes of the SB cluster (strubios)"
+# spack runs the recipes on Rocky 9's Python. ruff reads this line and does not write
+# code that needs a newer Python.
+requires-python = ">=3.9"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.5",
+]
+
+[tool.ruff]
+# A fix that changes code (sorted imports, a removed import) changes the hash of the
+# recipe: CI then rebuilds the package and everything that uses it. Formatting alone
+# does not change the hash.
+fix = true
+line-length = 99
+
+[tool.ruff.format]
+line-ending = "lf"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint]
+# written out, so that a new ruff version does not add rules by itself
+select = ["E", "F", "W", "I"]
+ignore = ["E731", "F403", "F811"]
+
+[tool.ruff.lint.per-file-ignores]
+# recipes get their names from "from spack.package import *"
+"**/package.py" = ["F405", "F821"]
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "spack",
+    "first-party",
+    "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+spack = ["spack"]

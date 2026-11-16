@@ -1,7 +1,8 @@
 import os
 
-from spack.package import *
 from spack_repo.builtin.build_systems.generic import Package
+
+from spack.package import *
 
 # The installers cannot be downloaded without a login, so spack fetches them from a
 # place of our own. LOCAL_INSTALLER_LINK is the address in front of the installer's
