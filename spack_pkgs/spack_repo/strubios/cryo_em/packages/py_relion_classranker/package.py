@@ -19,12 +19,7 @@ class PyRelionClassranker(PythonPackage, CudaPackage):
 
     license("GPL-3.0-only")
 
-    version("main", branch="main")
-    version(
-        "2025.09.16",
-        commit="352adf8b690ba56e9f4073cfee41c8fcad3dfb81",
-        preferred=True,
-    )
+    version("2025.09.16", commit="352adf8b690ba56e9f4073cfee41c8fcad3dfb81")
 
     variant("cuda", default=True, description="Use CUDA")
     conflicts("~cuda", msg="This site builds GPU versions only")

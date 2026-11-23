@@ -18,12 +18,7 @@ class PyModelAngelo(PythonPackage, CudaPackage):
 
     license("MIT")
 
-    version("main", branch="main")
-    version(
-        "1.0.18",
-        sha256="94f2463df97dbd4911fc77fd09c3c35dfd06e0a28c0e99bf73c5697541fe9fe2",
-        preferred=True,
-    )
+    version("1.0.18", sha256="94f2463df97dbd4911fc77fd09c3c35dfd06e0a28c0e99bf73c5697541fe9fe2")
 
     variant("cuda", default=True, description="Use CUDA")
     conflicts("~cuda", msg="This site builds GPU versions only")

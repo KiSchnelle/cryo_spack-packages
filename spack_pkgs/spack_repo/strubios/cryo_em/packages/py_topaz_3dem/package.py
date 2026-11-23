@@ -18,12 +18,7 @@ class PyTopaz3dem(PythonPackage, CudaPackage):
 
     license("GPL-3.0-or-later")
 
-    version("master", branch="master")
-    version(
-        "2026.01.08",
-        commit="c8dd487cbf9d27139d0d430068033fb90dd9a393",
-        preferred=True,
-    )
+    version("2026.01.08", commit="c8dd487cbf9d27139d0d430068033fb90dd9a393")
 
     variant("cuda", default=True, description="Use CUDA")
     conflicts("~cuda", msg="This site builds GPU versions only")

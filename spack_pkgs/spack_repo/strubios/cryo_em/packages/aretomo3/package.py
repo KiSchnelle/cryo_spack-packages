@@ -15,22 +15,12 @@ class Aretomo3(MakefilePackage, CudaPackage):
     in a single application."""
 
     homepage = "https://github.com/czimaginginstitute/AreTomo3"
-    url = "https://github.com/czimaginginstitute/AreTomo3/archive/refs/tags/v2.2.2.tar.gz"
     git = "https://github.com/czimaginginstitute/AreTomo3.git"
 
     license("BSD-3-Clause")
 
-    version("main", branch="main")
     # Upstream stopped tagging after v2.2.2, so newer versions are pinned by commit.
     version("2.3.3", commit="6b4d6b38e0f1bec7ca2344badeaa795665a38b7f")
-    version(
-        "2.2.2",
-        sha256="ee0a6bae8b541e1a1dd3465cf1e7d0bf4ee70b030662c55f2b583d678bb33fa9",
-    )
-    version(
-        "2.1.3",
-        sha256="1a57a861e2598e56a98b9c2c8dde326b72a58cfa83eb5f542366982acd6acf4d",
-    )
 
     depends_on("cxx", type="build")
     depends_on("gmake", type="build")
@@ -39,23 +29,12 @@ class Aretomo3(MakefilePackage, CudaPackage):
 
     conflicts("~cuda")
     conflicts("cuda_arch=none", when="+cuda", msg="A value for cuda_arch must be specified.")
-    conflicts(
-        "^cuda@13:",
-        when="@:2.2",
-        msg="CUDA 13+ requires @2.3: (makefile13 not in older releases)",
-    )
     # LibSrc/Lib ships prebuilt x86-64 static libraries
     requires("target=x86_64:", msg="AreTomo3 links prebuilt x86-64 libraries")
 
     @property
     def _makefile_name(self):
-        """Select makefile based on version and CUDA version.
-
-        Tagged releases only ship makefile11. From 2.3 on, makefile11 is stale
-        (it omits sources that are needed), so use makefile12 or makefile13.
-        """
-        if self.spec.satisfies("@:2.2"):
-            return "makefile11"
+        """makefile11 is stale since 2.3 (it omits sources that are needed)."""
         if self.spec.satisfies("^cuda@13:"):
             return "makefile13"
         return "makefile12"
@@ -74,8 +53,7 @@ class Aretomo3(MakefilePackage, CudaPackage):
 
         # makefile12 at 2.3.3 still lists this source, deleted in that version.
         # Only the path is removed so the line continuation stays intact.
-        if spec.satisfies("@2.3.3:"):
-            makefile.filter(r"\./AreTomo/PatchAlign/GRandom2D\.cu", "")
+        makefile.filter(r"\./AreTomo/PatchAlign/GRandom2D\.cu", "")
 
         # Set CUDA paths
         makefile.filter(r"^CUDAHOME = .*", f"CUDAHOME = {cuda.prefix}")

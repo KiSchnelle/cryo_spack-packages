@@ -16,12 +16,7 @@ class PyRelionBlush(PythonPackage, CudaPackage):
 
     license("MIT")
 
-    version("main", branch="main")
-    version(
-        "2025.12.15",
-        commit="ab48e6380e66b9aaf52362e86e060e9b9d8a40fd",
-        preferred=True,
-    )
+    version("2025.12.15", commit="ab48e6380e66b9aaf52362e86e060e9b9d8a40fd")
 
     variant("cuda", default=True, description="Use CUDA")
     conflicts("~cuda", msg="This site builds GPU versions only")

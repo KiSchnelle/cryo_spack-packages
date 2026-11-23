@@ -17,12 +17,7 @@ class PyDynamight(PythonPackage, CudaPackage):
 
     license("BSD-3-Clause")
 
-    version("main", branch="main")
-    version(
-        "2025.09.18",
-        commit="358db04d5c2ec2997f3f17060a456293f0b02185",
-        preferred=True,
-    )
+    version("2025.09.18", commit="358db04d5c2ec2997f3f17060a456293f0b02185")
 
     variant("cuda", default=True, description="Use CUDA acceleration")
     conflicts("~cuda", msg="tsnecuda is imported at runtime and requires CUDA")

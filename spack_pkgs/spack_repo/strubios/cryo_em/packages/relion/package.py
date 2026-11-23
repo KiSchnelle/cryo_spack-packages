@@ -59,8 +59,6 @@ class Relion(CMakePackage, CudaPackage):
     license("GPL-2.0-only")
 
     version("5.1.1", sha256="1bf75dcf287fb6d591cd4194c0d0cddf98590ae36c54fafbbcb7aa4daef85ec6")
-    version("5.1.0", sha256="714649163fbd7ee63cf9331d97751bd2e972703482349d8d7f2110387ef556d2")
-    version("5.0.1", sha256="3253230cd4b3d9633a5cac906937039b9971eb9430c3e2d838473777fb811f4c")
 
     variant("cuda", default=True, description="Build with CUDA")
     conflicts("~cuda", msg="This site builds GPU RELION only")
@@ -88,8 +86,7 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("cxx", type="build")
     depends_on("fortran", type="build", when="+own-fftw")
     depends_on("mpi")
-    depends_on("cmake@3.21:", type="build", when="@5.1:")
-    depends_on("cmake@3:3", type="build", when="@:5.0")
+    depends_on("cmake@3.21:", type="build")
     depends_on("binutils@2.32:", type="build")
 
     depends_on("amdfftw", when="~own-fftw +amd-fftw ~mklfft")
@@ -110,34 +107,21 @@ class Relion(CMakePackage, CudaPackage):
     depends_on("python+tkinter", when="+gui", type=("build", "run"))
 
     # The build edge must stay: the install-time weight fetch gets PYTHONPATH through it.
-    for _v in ("5.0.1", "5.1.0", "5.1.1"):
-        for _arch in CudaPackage.cuda_arch_values:
-            depends_on(
-                f"py-relion@={_v} +cuda cuda_arch={_arch}",
-                when=f"@={_v} +cuda cuda_arch={_arch}",
-                type=("build", "run"),
-            )
+    for _arch in CudaPackage.cuda_arch_values:
+        depends_on(
+            f"py-relion@=5.1.1 +cuda cuda_arch={_arch}",
+            when=f"+cuda cuda_arch={_arch}",
+            type=("build", "run"),
+        )
 
     @property
     def _torch_home(self):
         return str(self.prefix.share.relion.torch_home)
 
     def patch(self):
-        if self.spec.satisfies("@5.0.1"):
-            # Backport 5e18e811: the Intel disguise breaks nvcc on GCC 13+ (#1313, #1315)
-            filter_file("-D__INTEL_COMPILER ", "", "cmake/BuildTypes.cmake", string=True)
-        if self.spec.satisfies("@5.1.0"):
-            # 5.1.0's wrapper points at the deleted build stage; fixed upstream in 5.1.1
-            filter_file(
-                '"@Relion_BINARY_DIR@"',
-                '"@CMAKE_INSTALL_PREFIX@"',
-                "scripts/python_trace_amyloids.in",
-                string=True,
-            )
-        if self.spec.satisfies("@5.1:"):
-            # torch.compile needs Triton on a GPU, and builtin py-torch does not depend on it.
-            # PyPI wheels bring it, which is why upstream's conda environment works.
-            filter_file(r"^\s*@torch\.compile\s*$", "", "scripts/trace_amyloids.py")
+        # torch.compile needs Triton on a GPU, and builtin py-torch does not depend on it.
+        # PyPI wheels bring it, which is why upstream's conda environment works.
+        filter_file(r"^\s*@torch\.compile\s*$", "", "scripts/trace_amyloids.py")
 
     @run_before("cmake")
     def create_torch_home(self):
@@ -193,26 +177,18 @@ class Relion(CMakePackage, CudaPackage):
         env.set("RELION_QSUB_EXTRA5_HELP", "Name of extra spack modules to load.")
 
     def _check_wrappers(self):
-        tools = ["blush", "classranker", "modelangelo"]
-        if self.spec.satisfies("@5.1:"):
-            tools.append("trace_amyloids")
+        tools = ["blush", "classranker", "modelangelo", "trace_amyloids"]
         want = f'torch_home="{self._torch_home}"'
         for tool in tools:
             with open(join_path(self.prefix.bin, f"relion_python_{tool}")) as f:
                 text = f.read()
             if want not in text:
                 raise InstallError(f"relion_python_{tool}: wrong baked torch_home")
-        # text is trace_amyloids here, the last entry on @5.1:
-        if self.spec.satisfies("@5.1.0") and f'relion_home="{self.prefix}"' not in text:
-            raise InstallError("relion_python_trace_amyloids points outside the prefix")
 
     def _check_weights(self):
         ckpt = join_path(self._torch_home, "hub", "checkpoints")
-        sizes = dict(WEIGHT_SIZES)
-        markers = list(WEIGHT_MARKERS)
-        if self.spec.satisfies("@5.1:"):
-            sizes.update(TRACER_SIZES)
-            markers.extend(TRACER_MARKERS)
+        sizes = {**WEIGHT_SIZES, **TRACER_SIZES}
+        markers = [*WEIGHT_MARKERS, *TRACER_MARKERS]
         problems = [m for m in markers if not os.path.isfile(join_path(ckpt, m))]
         for name, size in sizes.items():
             path = join_path(ckpt, name)
@@ -260,10 +236,7 @@ class Relion(CMakePackage, CudaPackage):
             blush,
             (*blush, "-m", "amy-v1.0"),
             (*blush, "-m", "amy-v1.0-lsd"),
-        ]
-        if self.spec.satisfies("@5.1:"):
-            steps.append((join_path(self.prefix.bin, "relion_trace_amyloids.py"),))
-        steps += [
+            (join_path(self.prefix.bin, "relion_trace_amyloids.py"),),
             (*modelangelo, "setup_weights", "--bundle-name", "nucleotides"),
             (*modelangelo, "setup_weights", "--bundle-name", "nucleotides_no_seq"),
         ]
