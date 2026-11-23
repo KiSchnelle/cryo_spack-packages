@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-
 from spack_repo.builtin.build_systems.python import PythonPackage
 
 from spack.package import *
@@ -13,21 +12,26 @@ class PyUcsfPyem(PythonPackage):
     utilities for electron microscopy of biological samples."""
 
     homepage = "https://github.com/asarnow/pyem"
-    url = "https://github.com/asarnow/pyem/archive/refs/tags/v0.68.tar.gz"
-    git = "https://github.com/asarnow/pyem.git"
+    url = "https://github.com/asarnow/pyem/archive/refs/tags/v0.69.tar.gz"
 
-    license("GPL-3.0-only")
+    license("GPL-3.0-or-later")
 
+    # Builtin only has two snapshots from 2021 and 2024.
     version("0.69", sha256="969e0075ea7ba854e6ab2c5cf9ab315c7dc994dcb738574707cd4aad380c1105")
-    version("0.68", sha256="105c2fc9860dd927b051ceb90287cf5a4a2664ffa8ae0f95464263570ee733c5")
+
+    # Bugs of 0.69 itself: --normalize fails with numpy 2, and project.py leaves a column
+    # in its star file that makes projection_subtraction.py fail. See the patch header.
+    patch("pyem_0.69_fixes.patch")
 
     depends_on("py-setuptools", type="build")
 
+    # from requirements.txt of 0.69
     with default_args(type=("build", "run")):
         depends_on("py-numba@0.41:")
-        # numpy 2.5 removes np.row_stack, used by cfsc.py.
+        # np.row_stack, used by cfsc.py, was removed in numpy 2.5
         depends_on("py-numpy@1.26:2.4")
-        # pandas blocks numexpr 2.14.1 for silently wrong results; builtin has no guard.
+        # numexpr 2.14.1 gives wrong results on large arrays (numexpr issue 566). pandas
+        # shares this numexpr; only its main branch excludes 2.14.1, pandas 3.0 does not.
         depends_on("py-numexpr@2.8:2.14.0")
         depends_on("py-scipy@1.2:")
         depends_on("py-matplotlib@2.2:")
@@ -37,6 +41,6 @@ class PyUcsfPyem(PythonPackage):
         depends_on("py-pyfftw@0.10:")
         depends_on("py-healpy@1.11:")
         depends_on("py-natsort@6.0:")
-        depends_on("py-starfile@0.5.2:")
+        depends_on("py-starfile")
+        # imported by pyem/cli/star.py, missing from setup.py
         depends_on("py-six")
-        depends_on("python@3.9:")

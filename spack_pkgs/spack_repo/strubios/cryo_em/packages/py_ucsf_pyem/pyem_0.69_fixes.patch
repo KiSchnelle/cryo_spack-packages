@@ -1,0 +1,70 @@
+Fixes for pyem 0.69, found by running its commands on test data.
+
+pyem/vop/vop.py, normalize(), used by "map.py --normalize" and "emcalc.py --normalize":
+  - With numpy 2 the result of a float32 map is float64, because the map meets the
+    float64 mean and deviation, and mrc.write refuses float64 ("Unknown MRC data type
+    float64"). The result is now always float32, as it was for float32 maps with numpy 1.
+  - map.py passes rmask=None when --diameter is not given, and normalize() then fails
+    with "'<=' not supported between instances of 'NoneType' and 'float'". None now
+    means the default, rmask=1.0.
+
+pyem/cli/project.py, projection_subtraction.py, sort.py:
+  - parse_star() already adds the UCSF columns. The second augment_star_ucsf() resets
+    the index once more, which leaves a stray "level_0" column: project.py writes it
+    into its output star file, and a star file that has it makes the next command fail
+    with "cannot insert level_0, already exists".
+
+--- a/pyem/cli/project.py
++++ b/pyem/cli/project.py
+@@ -36,7 +36,6 @@
+     log.addHandler(hdlr)
+     log.setLevel(logging.getLevelName(args.loglevel.upper()))
+     df = star.parse_star(args.input, keep_index=False)
+-    star.augment_star_ucsf(df)
+     maxshift = np.round(np.max(np.abs(df[star.Relion.ORIGINS].values)))
+ 
+     if args.map is not None:
+--- a/pyem/cli/projection_subtraction.py
++++ b/pyem/cli/projection_subtraction.py
+@@ -59,7 +59,6 @@
+ 
+     log.info("Reading particle .star file")
+     df = star.parse_star(args.input, keep_index=False)
+-    star.augment_star_ucsf(df)
+     if not args.original:
+         df[star.UCSF.IMAGE_ORIGINAL_PATH] = df[star.UCSF.IMAGE_PATH]
+         df[star.UCSF.IMAGE_ORIGINAL_INDEX] = df[star.UCSF.IMAGE_INDEX]
+--- a/pyem/cli/sort.py
++++ b/pyem/cli/sort.py
+@@ -38,7 +38,6 @@
+ 
+     refmap = mrc.read(args.key, compat="relion")
+     df = star.parse_star(args.input, keep_index=False)
+-    star.augment_star_ucsf(df)
+     refmap_ft = vop.vol_ft(refmap, threads=args.threads)
+ 
+     apix = star.calculate_apix(df)
+--- a/pyem/vop/vop.py
++++ b/pyem/vop/vop.py
+@@ -138,6 +138,8 @@
+     rng = np.arange(-half, half)
+     x, y, z = np.meshgrid(rng, rng, rng)
+     r2 = x**2 + y**2 + z**2
++    if rmask is None:
++        rmask = 1.0
+     rmask = (half * rmask) if rmask <= 1.0 else rmask
+     mask = r2 > rmask**2
+     volm.mask = mask
+@@ -149,9 +151,10 @@
+     else:
+         sigma = np.std(volm)
+         mu = np.mean(volm)
++    normalized = ((vol - mu) / sigma).astype(np.float32)
+     if return_stats:
+-        return (vol - mu) / sigma, mu, sigma
+-    return (vol - mu) / sigma
++        return normalized, mu, sigma
++    return normalized
+ 
+ 
+ def label_to_axis(label):
