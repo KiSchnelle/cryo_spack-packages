@@ -23,8 +23,6 @@ class PyRelion(PythonPackage, CudaPackage):
     license("GPL-2.0-only")
 
     version("5.1.1", sha256="1bf75dcf287fb6d591cd4194c0d0cddf98590ae36c54fafbbcb7aa4daef85ec6")
-    version("5.1.0", sha256="714649163fbd7ee63cf9331d97751bd2e972703482349d8d7f2110387ef556d2")
-    version("5.0.1", sha256="3253230cd4b3d9633a5cac906937039b9971eb9430c3e2d838473777fb811f4c")
 
     variant("cuda", default=True, description="Build with CUDA")
     conflicts("~cuda", msg="This site builds GPU versions only")
@@ -60,6 +58,8 @@ class PyRelion(PythonPackage, CudaPackage):
         depends_on("py-loguru@0.7.0")
         depends_on("py-scikit-learn@1.5:1.7")
         depends_on("py-umap-learn@0.5.3")
+        # not in environment.yml: the pynndescent that umap-learn 0.5.3 has run with here
+        depends_on("py-pynndescent@0.5.7")
         depends_on("py-matplotlib@3.7.2")
         depends_on("py-morphosamplers@0.0.13")
         depends_on("py-pydantic@1.10.18")
@@ -75,9 +75,9 @@ class PyRelion(PythonPackage, CudaPackage):
         depends_on("py-dill@0.3.7")
         depends_on("py-numpy@1.26")
         depends_on("py-scipy@1.11.2")
-        depends_on("py-skan@0.12.2", when="@5.1:")
-        depends_on("py-opencv-python@4.10.0.84", when="@5.1:")
-        depends_on("py-scikit-image", when="@5.1:")
+        depends_on("py-skan@0.12.2")
+        depends_on("py-opencv-python@4.10.0.84")
+        depends_on("py-scikit-image")
         depends_on("py-qtpy")
 
         # relion pyproject.toml deps
