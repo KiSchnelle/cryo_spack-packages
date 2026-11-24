@@ -39,19 +39,20 @@ class PyRelion(PythonPackage, CudaPackage):
     depends_on("py-wheel", type="build")
     depends_on("py-setuptools-scm@6.3:", type="build")
 
-    # Exact pins so a rebuild does not drift with upstream branches.
+    # tsne-cuda and py-dynamight, which needs it, are the only GPU-specific dependencies
     for _arch in CudaPackage.cuda_arch_values:
         with default_args(when=f"+cuda cuda_arch={_arch}", type=("build", "run")):
-            depends_on(f"py-torch@2.7.1:+cuda cuda_arch={_arch}")
             depends_on(f"tsne-cuda@3.0.1+cuda+python cuda_arch={_arch}")
-            depends_on(f"py-relion-classranker@2025.09.16 +cuda cuda_arch={_arch}")
-            depends_on(f"py-relion-blush@2025.12.15 +cuda cuda_arch={_arch}")
             depends_on(f"py-dynamight@2025.09.18 +cuda cuda_arch={_arch}")
-            depends_on(f"py-topaz-3dem@2026.01.08 +cuda cuda_arch={_arch}")
-            # ~weights: relion fetches the only copy into its own prefix.
-            depends_on(f"py-model-angelo ~weights +cuda cuda_arch={_arch}")
 
+    # Exact pins so a rebuild does not drift with upstream branches.
     with default_args(type=("build", "run")):
+        depends_on("py-torch@2.7.1:")
+        depends_on("py-relion-classranker@2025.09.16")
+        depends_on("py-relion-blush@2025.12.15")
+        depends_on("py-topaz-3dem@2026.01.08")
+        # ~weights: relion fetches the only copy into its own prefix.
+        depends_on("py-model-angelo ~weights")
         depends_on("py-tqdm@4.65.0")
         depends_on("py-mrcfile@1.4.3")
         depends_on("py-starfile@0.5.6:")

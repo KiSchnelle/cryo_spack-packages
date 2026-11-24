@@ -3,13 +3,12 @@
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 import os
 
-from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.python import PythonPackage
 
 from spack.package import *
 
 
-class PyModelAngelo(PythonPackage, CudaPackage):
+class PyModelAngelo(PythonPackage):
     """ModelAngelo is an automatic atomic model building program for cryo-EM maps."""
 
     homepage = "https://github.com/3dem/model-angelo"
@@ -20,9 +19,6 @@ class PyModelAngelo(PythonPackage, CudaPackage):
 
     version("1.0.18", sha256="94f2463df97dbd4911fc77fd09c3c35dfd06e0a28c0e99bf73c5697541fe9fe2")
 
-    variant("cuda", default=True, description="Use CUDA")
-    conflicts("~cuda", msg="This site builds GPU versions only")
-
     variant(
         "weights",
         default=True,
@@ -30,23 +26,11 @@ class PyModelAngelo(PythonPackage, CudaPackage):
         "py-relion uses ~weights",
     )
 
-    conflicts(
-        "cuda_arch=none",
-        when="+cuda",
-        msg="Must specify CUDA compute capabilities of your GPU, see "
-        "https://developer.nvidia.com/cuda-gpus",
-    )
-
     depends_on("py-setuptools", type="build")
     depends_on("python@3.11", type=("build", "run"))
 
-    # CUDA-aware deps — propagate cuda_arch
-    for _arch in CudaPackage.cuda_arch_values:
-        depends_on(
-            f"py-torch@2:+cuda cuda_arch={_arch}",
-            when=f"+cuda cuda_arch={_arch}",
-            type=("build", "run"),
-        )
+    # GPU or CPU is decided by how py-torch is built
+    depends_on("py-torch@2:", type=("build", "run"))
 
     depends_on("py-tqdm", type=("build", "run"))
     depends_on("py-scipy", type=("build", "run"))

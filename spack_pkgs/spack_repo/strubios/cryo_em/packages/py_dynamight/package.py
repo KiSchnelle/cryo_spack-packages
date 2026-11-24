@@ -32,15 +32,12 @@ class PyDynamight(PythonPackage, CudaPackage):
     depends_on("py-hatch-vcs", type="build")
     depends_on("python@3.10:", type=("build", "run"))
 
-    # CUDA-aware deps — propagate cuda_arch
+    # torch up to 2.13 otherwise forces py-protobuf@3.13 and py-tensorboard@2.11,
+    # and every DynaMight command imports tensorboard.
+    depends_on("py-torch@1.13:+custom-protobuf", type=("build", "run"))
+
+    # tsne-cuda is the only dependency that is compiled for the GPU
     for _arch in CudaPackage.cuda_arch_values:
-        # torch up to 2.13 otherwise forces py-protobuf@3.13 and py-tensorboard@2.11,
-        # and every DynaMight command imports tensorboard.
-        depends_on(
-            f"py-torch@1.13:+cuda+custom-protobuf cuda_arch={_arch}",
-            when=f"+cuda cuda_arch={_arch}",
-            type=("build", "run"),
-        )
         depends_on(
             f"tsne-cuda@3.0.1+cuda+python cuda_arch={_arch}",
             when=f"+cuda cuda_arch={_arch}",

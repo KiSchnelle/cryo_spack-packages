@@ -2,13 +2,12 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack_repo.builtin.build_systems.cuda import CudaPackage
 from spack_repo.builtin.build_systems.python import PythonPackage
 
 from spack.package import *
 
 
-class PyTopaz3dem(PythonPackage, CudaPackage):
+class PyTopaz3dem(PythonPackage):
     """topaz: Pipeline for particle picking in cryo-electron microscopy images using
     convolutional neural networks trained from positive and unlabeled examples. Also
     featuring micrograph and tomogram denoising with DNNs."""
@@ -20,25 +19,12 @@ class PyTopaz3dem(PythonPackage, CudaPackage):
 
     version("2026.01.08", commit="c8dd487cbf9d27139d0d430068033fb90dd9a393")
 
-    variant("cuda", default=True, description="Use CUDA")
-    conflicts("~cuda", msg="This site builds GPU versions only")
-    conflicts(
-        "cuda_arch=none",
-        when="+cuda",
-        msg="Must specify cuda_arch, see https://developer.nvidia.com/cuda-gpus",
-    )
-
     # RELION's default picking path needs pkg_resources, which setuptools 82 removed.
     depends_on("py-setuptools@:81", type=("build", "run"))
     depends_on("python@3.8:", type=("build", "run"))
 
-    # CUDA-aware deps — propagate cuda_arch
-    for _arch in CudaPackage.cuda_arch_values:
-        depends_on(
-            f"py-torch@2.0.1:+cuda cuda_arch={_arch}",
-            when=f"+cuda cuda_arch={_arch}",
-            type=("build", "run"),
-        )
+    # GPU or CPU is decided by how py-torch is built
+    depends_on("py-torch@2.0.1:", type=("build", "run"))
 
     depends_on("py-numpy@1.11:", type=("build", "run"))
     depends_on("py-pandas", type=("build", "run"))
